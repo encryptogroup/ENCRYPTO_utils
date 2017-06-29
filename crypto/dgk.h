@@ -45,8 +45,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include "powmod.h"
-#include "../util/timer.h"
+#include "../powmod.h"
+#include "../timer.h"
 
 /*
  This represents a DGK public key.
