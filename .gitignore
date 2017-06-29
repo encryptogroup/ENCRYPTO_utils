@@ -1,0 +1,9 @@
+*.h~
+*.cpp~
+*.c~
+*.o
+*.exe
+.metadata
+.cproject
+.project
+.settings

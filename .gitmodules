@@ -1,0 +1,3 @@
+[submodule "Miracl"]
+	path = Miracl
+	url = git://github.com/CertiVox/MIRACL.git
