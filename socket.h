@@ -2,17 +2,17 @@
  \file 		socket.h
  \author 	Seung Geol Choi
  \copyright	ABY - A Framework for Efficient Mixed-protocol Secure Two-party Computation
-			Copyright (C) 2015 Engineering Cryptographic Protocols Group, TU Darmstadt
-			This program is free software: you can redistribute it and/or modify
-			it under the terms of the GNU Affero General Public License as published
-			by the Free Software Foundation, either version 3 of the License, or
-			(at your option) any later version.
-			This program is distributed in the hope that it will be useful,
-			but WITHOUT ANY WARRANTY; without even the implied warranty of
-			MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-			GNU Affero General Public License for more details.
-			You should have received a copy of the GNU Affero General Public License
-			along with this program. If not, see <http://www.gnu.org/licenses/>.
+ Copyright (C) 2015 Engineering Cryptographic Protocols Group, TU Darmstadt
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published
+ by the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ GNU Affero General Public License for more details.
+ You should have received a copy of the GNU Affero General Public License
+ along with this program. If not, see <http://www.gnu.org/licenses/>.
  \brief		Socket Implementation
  */
 
@@ -40,10 +40,12 @@ public:
 	}
 	void ResetSndCnt() {
 		m_nSndCount = 0;
-	};
+	}
+	;
 	void ResetRcvCnt() {
 		m_nRcvCount = 0;
-	};
+	}
+	;
 
 	BOOL Socket() {
 		BOOL success = false;
@@ -71,7 +73,6 @@ public:
 
 		int one = 1;
 		setsockopt(m_hSock, SOL_TCP, TCP_NODELAY, &one, sizeof(one));
-
 
 		return success;
 
@@ -240,7 +241,7 @@ public:
 			}
 #else
 			if (ret < 0) {
-				if ( errno == EAGAIN) {
+				if (errno == EAGAIN) {
 					std::cerr << "socket recv eror: EAGAIN" << std::endl;
 					SleepMiliSec(200);
 					continue;
@@ -250,7 +251,7 @@ public:
 					return nLen - n;
 				}
 			} else if (ret == 0) {
-				cerr << "socket recv: unexpected shutdown by peer\n";
+				std::cerr << "socket recv: unexpected shutdown by peer\n";
 				return nLen - n;
 			}
 #endif
@@ -271,8 +272,7 @@ public:
 #endif
 		m_nSndCount += nLen;
 
-		while (n > 0)
-		{
+		while (n > 0) {
 			ret = send(m_hSock, p, n, nFlags);
 #ifdef WIN32
 			if( ret <= 0 )
@@ -280,22 +280,21 @@ public:
 				return nLen - n;
 			}
 #else
-			if (ret < 0)
-			{
+			if (ret < 0) {
 				if ( errno == EAGAIN) {
-					cerr << "socket send eror: EAGAIN" << endl;
+					std::cerr << "socket send eror: EAGAIN" << std::endl;
 					SleepMiliSec(200);
 					continue;
 				} else {
-					cerr << "socket send error: " << errno << endl;
+					std::cerr << "socket send error: " << errno << std::endl;
 					perror("Socket error ");
 					return nLen - n;
 				}
 			}
 #endif
 
-		    p += ret;
-		    n -= static_cast<uint64_t>(ret);
+			p += ret;
+			n -= static_cast<uint64_t>(ret);
 		}
 		return nLen;
 	}
