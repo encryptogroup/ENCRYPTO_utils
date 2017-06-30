@@ -138,7 +138,7 @@ private:
 	CEvent* m_eRcved;
 	CEvent* m_eFin;
 	uint8_t m_bChannelID;
-	queue<rcv_ctx*>* m_qRcvedBlocks;
+	std::queue<rcv_ctx*>* m_qRcvedBlocks;
 	bool m_bSndAlive;
 	bool m_bRcvAlive;
 };
