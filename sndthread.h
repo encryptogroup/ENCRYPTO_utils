@@ -100,9 +100,15 @@ public:
 		uint32_t iters;
 		snd_task* task;
 		bool run = true;
+		bool empty = true;
 		while(run) {
-			if(send_tasks.empty())
+			sndlock->Lock();
+			empty = send_tasks.empty();
+			sndlock->Unlock();
+
+			if(empty){
 				send->Wait();
+			}
 			//cout << "Awoken" << endl;
 
 			sndlock->Lock();
@@ -110,8 +116,10 @@ public:
 			sndlock->Unlock();
 
 			while((iters--) && run) {
+				sndlock->Lock();
 				task = send_tasks.front();
 				send_tasks.pop();
+				sndlock->Unlock();
 				channelid = task->channelid;
 				mysock->Send(&channelid, sizeof(uint8_t));
 				mysock->Send(&task->bytelen, sizeof(uint64_t));
