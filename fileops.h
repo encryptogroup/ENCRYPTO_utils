@@ -2,7 +2,7 @@
 #define _FILEOPS_H_
 
 #include <stdio.h>
-#include "../util/typedefs.h"
+#include "typedefs.h"
 
 	//TODO move to utils
 	/*File Operation Methods*/
