@@ -36,7 +36,7 @@ public:
 		rcvlock = new CLock();
 		listeners = (rcv_task*) calloc(MAX_NUM_COMM_CHANNELS, sizeof(rcv_task));
 		for(uint32_t i = 0; i < MAX_NUM_COMM_CHANNELS; i++) {
-			listeners[i].rcv_buf = new queue<rcv_ctx*>;
+			listeners[i].rcv_buf = new std::queue<rcv_ctx*>;
 		}
 		listeners[ADMIN_CHANNEL].inuse = true;
 	}
@@ -76,14 +76,14 @@ public:
 		rcvlock->Unlock();
 
 	}
-	queue<rcv_ctx*>* add_listener(uint8_t channelid, CEvent* rcv_event, CEvent* fin_event) {
+	std::queue<rcv_ctx*>* add_listener(uint8_t channelid, CEvent* rcv_event, CEvent* fin_event) {
 		rcvlock->Lock();
 #ifdef DEBUG_RECEIVE_THREAD
 		cout << "Registering listener on channel " << (uint32_t) channelid << endl;
 #endif
 
 		if(listeners[channelid].inuse || channelid == ADMIN_CHANNEL) {
-			cerr << "A listener has already been registered on channel " << (uint32_t) channelid << endl;
+			std::cerr << "A listener has already been registered on channel " << (uint32_t) channelid << std::endl;
 			assert(!listeners[channelid].inuse);
 			assert(channelid != ADMIN_CHANNEL);
 		}
