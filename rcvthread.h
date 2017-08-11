@@ -31,9 +31,9 @@ struct rcv_task {
 
 class RcvThread: public CThread {
 public:
-	RcvThread(CSocket* sock) {
+	RcvThread(CSocket* sock, CLock *glock) {
 		mysock = sock;
-		rcvlock = new CLock();
+		rcvlock = glock;
 		listeners = (rcv_task*) calloc(MAX_NUM_COMM_CHANNELS, sizeof(rcv_task));
 		for(uint32_t i = 0; i < MAX_NUM_COMM_CHANNELS; i++) {
 			listeners[i].rcv_buf = new queue<rcv_ctx*>;
@@ -48,9 +48,19 @@ public:
 			delete listeners[i].rcv_buf;
 		}
 		free(listeners);
-		delete rcvlock;
+		//delete rcvlock;
 	}
 	;
+
+    CLock *getlock() {
+        return rcvlock;
+    }
+    ;
+
+    void setlock(CLock *glock) {
+        rcvlock = glock;
+    }
+    ;
 
 	void flush_queue(uint8_t channelid) {
 		while(!listeners[channelid].rcv_buf->empty()) {
@@ -144,9 +154,13 @@ public:
 					rcv_buf->rcvbytes = rcvbytelen;
 
 					mysock->Receive(rcv_buf->buf, rcvbytelen);
+                    rcvlock->Lock();
 					listeners[channelid].rcv_buf->push(rcv_buf);
 
-					if(listeners[channelid].inuse)
+                    bool cond = listeners[channelid].inuse;
+                    rcvlock->Unlock();
+
+					if(cond)
 						listeners[channelid].rcv_event->Set();
 				}
 			}

@@ -24,6 +24,8 @@ public:
 		m_qRcvedBlocks = rcver->add_listener(channelid, m_eRcved, m_eFin);
 		m_bSndAlive = true;
 		m_bRcvAlive = true;
+        assert(rcver->getlock() == snder->getlock());
+        chnllock = rcver->getlock();
 	}
 
 	~channel() {
@@ -55,9 +57,16 @@ public:
 		return buf;
 	}
 
+    bool queue_empty() {
+        chnllock->Lock();
+        bool qempty = m_qRcvedBlocks->empty();
+        chnllock->Unlock();
+        return qempty;
+    }
+
 	uint8_t* blocking_receive() {
 		assert(m_bRcvAlive);
-		while(m_qRcvedBlocks->empty())
+		while(queue_empty())
 			m_eRcved->Wait();
 		rcv_ctx* ret = (rcv_ctx*) m_qRcvedBlocks->front();
 		uint8_t* ret_block = ret->buf;
@@ -137,6 +146,7 @@ private:
 	SndThread* m_cSnder;
 	CEvent* m_eRcved;
 	CEvent* m_eFin;
+    CLock* chnllock;
 	uint8_t m_bChannelID;
 	queue<rcv_ctx*>* m_qRcvedBlocks;
 	bool m_bSndAlive;

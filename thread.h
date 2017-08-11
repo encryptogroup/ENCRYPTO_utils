@@ -189,8 +189,10 @@ public:
 	}
 
 	~CEvent() {
-		pthread_mutex_destroy(&m_mtx);
+		pthread_mutex_lock(&m_mtx);
 		pthread_cond_destroy(&m_cnd);
+		pthread_mutex_unlock(&m_mtx);
+		pthread_mutex_destroy(&m_mtx);
 	}
 
 // Operations

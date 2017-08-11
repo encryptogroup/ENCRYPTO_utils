@@ -22,9 +22,9 @@ struct snd_task {
 
 class SndThread: public CThread {
 public:
-	SndThread(CSocket* sock) {
+	SndThread(CSocket* sock, CLock *glock) {
 		mysock = sock;
-		sndlock = new CLock();
+		sndlock = glock;
 		send = new CEvent();
 	}
 	;
@@ -38,6 +38,16 @@ public:
 		this->Wait();
 	}
 	;
+
+    CLock *getlock() {
+        return sndlock;
+    }
+    ;
+
+    void setlock(CLock *glock) {
+        sndlock = glock;
+    }
+    ;
 
 	void add_snd_task_start_len(uint8_t channelid, uint64_t sndbytes, uint8_t* sndbuf, uint64_t startid, uint64_t len) {
 		snd_task* task = (snd_task*) malloc(sizeof(snd_task));
@@ -127,7 +137,7 @@ public:
 				free(task);
 
 				if(channelid == ADMIN_CHANNEL) {
-					delete sndlock;
+					//delete sndlock;
 					delete send;
 					run = false;
 				}
