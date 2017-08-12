@@ -439,26 +439,26 @@ void sha512_hash(uint8_t* resbuf, uint32_t noutbytes, uint8_t* inbuf, uint32_t n
 	memcpy(resbuf, hash_buf, noutbytes);
 }
 
-//Read random bytes from /dev/random - copied from stackoverflow (post by zneak)
+//Read random bytes from /dev/urandom
 void gen_secure_random(uint8_t* dest, uint32_t nbytes) {
-	int fd = open("/dev/random", O_RDONLY);
+	int fd = open("/dev/urandom", O_RDONLY);
 	if (fd < 0)
 	{
-		cerr << "Unable to open /dev/random, exiting" << endl;
+		std::cerr << "Unable to open /dev/urandom, exiting" << std::endl;
 		exit(0);
 	}
 	size_t bytectr = 0;
 	while (bytectr < nbytes) {
 		ssize_t result = read(fd, dest + bytectr, nbytes - bytectr);
 		if (result < 0) {
-			cerr << "Unable to read from /dev/random, exiting" << endl;
+			std::cerr << "Unable to read from /dev/urandom, exiting" << std::endl;
 			exit(0);
 		}
 		bytectr += static_cast<size_t>(result);
 	}
 	if (close(fd) < 0)
 	{
-		cerr << "Unable to close /dev/random" << endl;
+		std::cerr << "Unable to close /dev/urandom" << std::endl;
 	}
 }
 

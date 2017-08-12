@@ -50,8 +50,6 @@ static aby_timings m_tTimes[P_LAST - P_FIRST + 1];
 static aby_comm m_tSend[P_LAST - P_FIRST + 1];
 static aby_comm m_tRecv[P_LAST - P_FIRST + 1];
 
-using namespace std;
-
 /**
  * Return time difference in milliseconds
  */
@@ -67,15 +65,15 @@ static double getMillies(timespec timestart, timespec timeend) {
  * @param msg - a message for debugging
  * @param phase - the ABY phase to measure
  */
-static void StartWatch(const string& msg, ABYPHASE phase) {
+static void StartWatch(const std::string& msg, ABYPHASE phase) {
 	if (phase < P_FIRST || phase > P_LAST) {
-		cerr << "Phase not recognized: " << phase << endl;
+		std::cerr << "Phase not recognized: " << phase << std::endl;
 		return;
 	}
 
 	clock_gettime(CLOCK_MONOTONIC, &(m_tTimes[phase].tbegin));
 #ifndef BATCH
-	cout << msg << endl;
+	std::cout << msg << std::endl;
 #endif
 }
 
@@ -85,9 +83,9 @@ static void StartWatch(const string& msg, ABYPHASE phase) {
  * @param msg - a message for debugging
  * @param phase - the ABY phase to measure
  */
-static void StopWatch(const string& msg, ABYPHASE phase) {
+static void StopWatch(const std::string& msg, ABYPHASE phase) {
 	if (phase < P_FIRST || phase > P_LAST) {
-		cerr << "Phase not recognized: " << phase << endl;
+		std::cerr << "Phase not recognized: " << phase << std::endl;
 		return;
 	}
 
@@ -95,7 +93,7 @@ static void StopWatch(const string& msg, ABYPHASE phase) {
 	m_tTimes[phase].timing = getMillies(m_tTimes[phase].tbegin, m_tTimes[phase].tend);
 
 #ifndef BATCH
-	cout << msg << m_tTimes[phase].timing << " ms " << endl;
+	std::cout << msg << m_tTimes[phase].timing << " ms " << std::endl;
 #endif
 }
 
@@ -105,7 +103,7 @@ static void StopWatch(const string& msg, ABYPHASE phase) {
  * @param phase - the ABY phase to measure
  * @param sock - a vector of sockets
  */
-static void StartRecording(const string& msg, ABYPHASE phase, vector<CSocket*> sock) {
+static void StartRecording(const std::string& msg, ABYPHASE phase, std::vector<CSocket*> sock) {
 	StartWatch(msg, phase);
 
 	m_tSend[phase].cbegin = 0;
@@ -123,7 +121,7 @@ static void StartRecording(const string& msg, ABYPHASE phase, vector<CSocket*> s
  * @param phase - the ABY phase to measure
  * @param sock - a vector of sockets
  */
-static void StopRecording(const string& msg, ABYPHASE phase, vector<CSocket*> sock) {
+static void StopRecording(const std::string& msg, ABYPHASE phase, std::vector<CSocket*> sock) {
 	StopWatch(msg, phase);
 
 	m_tSend[phase].cend = 0;
@@ -139,28 +137,28 @@ static void StopRecording(const string& msg, ABYPHASE phase, vector<CSocket*> so
 
 
 static void PrintTimings() {
-	string unit = " ms";
-	cout << "Timings: " << endl;
-	cout << "Total =\t\t" << m_tTimes[P_TOTAL].timing << unit << endl;
-	cout << "Init =\t\t" << m_tTimes[P_INIT].timing << unit << endl;
-	cout << "CircuitGen =\t" << m_tTimes[P_CIRCUIT].timing << unit << endl;
-	cout << "Network =\t" << m_tTimes[P_NETWORK].timing << unit << endl;
-	cout << "BaseOTs =\t" << m_tTimes[P_BASE_OT].timing << unit << endl;
-	cout << "Setup =\t\t" << m_tTimes[P_SETUP].timing << unit << endl;
-	cout << "OTExtension =\t" << m_tTimes[P_OT_EXT].timing << unit << endl;
-	cout << "Garbling =\t" << m_tTimes[P_GARBLE].timing << unit << endl;
-	cout << "Online =\t" << m_tTimes[P_ONLINE].timing << unit << endl;
+	std::string unit = " ms";
+	std::cout << "Timings: " << std::endl;
+	std::cout << "Total =\t\t" << m_tTimes[P_TOTAL].timing << unit << std::endl;
+	std::cout << "Init =\t\t" << m_tTimes[P_INIT].timing << unit << std::endl;
+	std::cout << "CircuitGen =\t" << m_tTimes[P_CIRCUIT].timing << unit << std::endl;
+	std::cout << "Network =\t" << m_tTimes[P_NETWORK].timing << unit << std::endl;
+	std::cout << "BaseOTs =\t" << m_tTimes[P_BASE_OT].timing << unit << std::endl;
+	std::cout << "Setup =\t\t" << m_tTimes[P_SETUP].timing << unit << std::endl;
+	std::cout << "OTExtension =\t" << m_tTimes[P_OT_EXT].timing << unit << std::endl;
+	std::cout << "Garbling =\t" << m_tTimes[P_GARBLE].timing << unit << std::endl;
+	std::cout << "Online =\t" << m_tTimes[P_ONLINE].timing << unit << std::endl;
 }
 
 static void PrintCommunication() {
-	string unit = " bytes";
-	cout << "Communication: " << endl;
-	cout << "Total Sent / Rcv\t" << m_tSend[P_TOTAL].totalcomm << " " << unit << " / " << m_tRecv[P_TOTAL].totalcomm << unit << endl;
-	cout << "BaseOTs Sent / Rcv\t" << m_tSend[P_BASE_OT].totalcomm << " " << unit << " / " << m_tRecv[P_BASE_OT].totalcomm << unit << endl;
-	cout << "Setup Sent / Rcv\t" << m_tSend[P_SETUP].totalcomm << " " << unit << " / " << m_tRecv[P_SETUP].totalcomm << unit << endl;
-	cout << "OTExtension Sent / Rcv\t" << m_tSend[P_OT_EXT].totalcomm << " " << unit << " / " << m_tRecv[P_OT_EXT].totalcomm << unit << endl;
-	cout << "Garbling Sent / Rcv\t" << m_tSend[P_GARBLE].totalcomm << " " << unit << " / " << m_tRecv[P_GARBLE].totalcomm << unit << endl;
-	cout << "Online Sent / Rcv\t" << m_tSend[P_ONLINE].totalcomm << " " << unit << " / " << m_tRecv[P_ONLINE].totalcomm << unit << endl;
+	std::string unit = " bytes";
+	std::cout << "Communication: " << std::endl;
+	std::cout << "Total Sent / Rcv\t" << m_tSend[P_TOTAL].totalcomm << " " << unit << " / " << m_tRecv[P_TOTAL].totalcomm << unit << std::endl;
+	std::cout << "BaseOTs Sent / Rcv\t" << m_tSend[P_BASE_OT].totalcomm << " " << unit << " / " << m_tRecv[P_BASE_OT].totalcomm << unit << std::endl;
+	std::cout << "Setup Sent / Rcv\t" << m_tSend[P_SETUP].totalcomm << " " << unit << " / " << m_tRecv[P_SETUP].totalcomm << unit << std::endl;
+	std::cout << "OTExtension Sent / Rcv\t" << m_tSend[P_OT_EXT].totalcomm << " " << unit << " / " << m_tRecv[P_OT_EXT].totalcomm << unit << std::endl;
+	std::cout << "Garbling Sent / Rcv\t" << m_tSend[P_GARBLE].totalcomm << " " << unit << " / " << m_tRecv[P_GARBLE].totalcomm << unit << std::endl;
+	std::cout << "Online Sent / Rcv\t" << m_tSend[P_ONLINE].totalcomm << " " << unit << " / " << m_tRecv[P_ONLINE].totalcomm << unit << std::endl;
 }
 
 static double GetTimeForPhase(ABYPHASE phase) {
