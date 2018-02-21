@@ -61,8 +61,6 @@ typedef REGISTER_SIZE REGSIZE;
 #define FILL_BYTES				AES_BYTES
 #define FILL_BITS				AES_BITS
 
-#define MAX_REPLY_BITS			65536 //at most 2^16 bits may be sent in one go
-
 #define RETRY_CONNECT		1000
 #define CONNECT_TIMEO_MILISEC	10000
 
