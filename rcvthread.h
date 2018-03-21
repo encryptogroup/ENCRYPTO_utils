@@ -163,6 +163,10 @@ public:
 					if(cond)
 						listeners[channelid].rcv_event->Set();
 				}
+			} else {
+				// We received 0 bytes, probably due to some major error. Just return.
+				// TODO: Probably add some more elaborate error handling.
+				return;
 			}
 
 		}
