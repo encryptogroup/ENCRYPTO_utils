@@ -38,6 +38,7 @@
 #include <string.h>
 #include "../powmod.h"
 #include "../timer.h"
+#include "../utils.h"
 
 /*
  On memory handling:

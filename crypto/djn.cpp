@@ -55,7 +55,7 @@ void djn_complete_pubkey(unsigned int modulusbits, djn_pubkey_t** pub, mpz_t n, 
 
 void djn_keygen(unsigned int modulusbits, djn_pubkey_t** pub, djn_prvkey_t** prv) {
 	mpz_t test, x;
-	gmp_randstate_t rnd;
+//	gmp_randstate_t rnd;
 
 	/* allocate the new key structures */
 	*pub = (djn_pubkey_t*) malloc(sizeof(djn_pubkey_t));
@@ -82,13 +82,15 @@ void djn_keygen(unsigned int modulusbits, djn_pubkey_t** pub, djn_prvkey_t** prv
 	mpz_init(test);
 	mpz_init(x);
 
-	gmp_randinit_default(rnd);
-	gmp_randseed_ui(rnd, rand());
+//	gmp_randinit_default(rnd);
+//	gmp_randseed_ui(rnd, aby_rand());
 
 	do {
 		// choose bits of p and q randomly
-		mpz_urandomb((*prv)->p, rnd, modulusbits / 2);
-		mpz_urandomb((*prv)->q, rnd, modulusbits / 2);
+		//mpz_urandomb((*prv)->p, rnd, modulusbits / 2);
+		//mpz_urandomb((*prv)->q, rnd, modulusbits / 2);
+                aby_prng((*prv)->p, modulusbits / 2);
+                aby_prng((*prv)->q, modulusbits / 2);
 
 		// set highest bit to 1 to ensure high length
 		mpz_setbit((*prv)->p, modulusbits / 2);
@@ -145,7 +147,9 @@ void djn_keygen(unsigned int modulusbits, djn_pubkey_t** pub, djn_prvkey_t** prv
 
 	/* pick random x in Z_n^* */
 	do {
-		mpz_urandomm(x, rnd, (*pub)->n);
+		//mpz_urandomm(x, rnd, (*pub)->n);
+                aby_prng(x, mpz_sizeinbase((*pub)->n, 2) + 256);
+		mpz_mod(x, x, (*pub)->n);
 		mpz_gcd(test, x, (*pub)->n);
 	} while (mpz_cmp_ui(test, 1));
 
@@ -178,7 +182,7 @@ void djn_keygen(unsigned int modulusbits, djn_pubkey_t** pub, djn_prvkey_t** prv
 
 	/* clear temporary integers and randstate */
 	mpz_clears(x, test, NULL);
-	gmp_randclear(rnd);
+	//gmp_randclear(rnd);
 }
 
 /**
@@ -195,7 +199,8 @@ void djn_encrypt(mpz_t res, djn_pubkey_t* pub, mpz_t plaintext, gmp_randstate_t 
 #endif
 
 	/* pick random blinding factor r */
-	mpz_urandomb(r, rnd, pub->rbits);
+	//mpz_urandomb(r, rnd, pub->rbits);
+        aby_prng(r, pub->rbits);
 
 #if DEBUG
 	gmp_printf("r = %Zd\n", r);
@@ -227,7 +232,8 @@ void djn_encrypt_crt(mpz_t res, djn_pubkey_t* pub, djn_prvkey_t* prv, mpz_t plai
 #endif
 
 	/* pick random blinding factor r */
-	mpz_urandomb(r, rnd, pub->rbits);
+	//mpz_urandomb(r, rnd, pub->rbits);
+        aby_prng(r, pub->rbits);
 
 #if DEBUG
 	gmp_printf("r = %Zd\n", r);
@@ -259,7 +265,8 @@ void djn_encrypt_fb(mpz_t res, djn_pubkey_t* pub, mpz_t plaintext, gmp_randstate
 #endif
 
 	/* pick random blinding factor r */
-	mpz_urandomb(r, rnd, pub->rbits);
+	//mpz_urandomb(r, rnd, pub->rbits);
+        aby_prng(r, pub->rbits);
 
 #if DEBUG
 	gmp_printf("r = %Zd\n", r);

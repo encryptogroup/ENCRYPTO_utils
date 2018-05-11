@@ -20,6 +20,7 @@
 #define GMP_PK_CRYPTO_H_
 
 #include "pk-crypto.h"
+#include "../utils.h"
 #include <gmp.h>
 
 class prime_field;

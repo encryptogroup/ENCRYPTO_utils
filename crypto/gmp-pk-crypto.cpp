@@ -93,7 +93,9 @@ num* prime_field::get_rnd_num(uint32_t bitlen) {
 	if (bitlen == 0)
 		bitlen = secparam.ifcbits;
 	mpz_init(val);
-	mpz_urandomm(val, rnd_state, q);
+	//mpz_urandomm(val, rnd_state, q);
+        aby_prng(val, (mp_bitcnt_t) mpz_sizeinbase(q, 2) + secparam.ifcbits);
+        mpz_mod(val, val, q);
 	num* ret = new gmp_num(this, val);
 	mpz_clear(val);
 	return ret;
@@ -102,7 +104,9 @@ num* prime_field::get_rnd_num(uint32_t bitlen) {
 fe* prime_field::get_rnd_fe(uint32_t bitlen) {
 	mpz_t val;
 	mpz_init(val);
-	mpz_urandomm(val, rnd_state, q);
+	//mpz_urandomm(val, rnd_state, q);
+        aby_prng(val, mpz_sizeinbase(q, 2) + secparam.ifcbits);
+        mpz_mod(val, val, q);
 	fe* ret = new gmp_fe(this, val);
 	mpz_clear(val);
 	return ret;
@@ -190,7 +194,8 @@ fe* prime_field::get_rnd_generator() {
 	mpz_init(tmp);
 	//sample random element x in Zp, and then compute x^{(p-1)/q} mod p
 	do {
-		mpz_urandomb(tmp, rnd_state, secparam.ifcbits);
+		//mpz_urandomb(tmp, rnd_state, secparam.ifcbits);
+                aby_prng(tmp, secparam.ifcbits);
 		mpz_mod(tmp, tmp, p);
 		mpz_powm(tmp, tmp, q, p);
 	} while (!(mpz_cmp_ui(tmp, (uint32_t ) 1)));
@@ -235,15 +240,15 @@ void prime_field::init(seclvl sp, uint8_t* seed) {
 	}
 	order = new gmp_num(this, q);
 
-	gmp_randinit_default(rnd_state);
-	gmp_randseed(rnd_state, rnd_seed);
+//	gmp_randinit_default(rnd_state);
+//	gmp_randseed(rnd_state, rnd_seed);
 	fe_bytelen = ceil_divide(secparam.ifcbits, 8);
 
 	mpz_clear(rnd_seed);
 }
 
 prime_field::~prime_field() {
-	gmp_randclear(rnd_state);
+//	gmp_randclear(rnd_state);
 	mpz_clear(p);
 	mpz_clear(g);
 	mpz_clear(q);
