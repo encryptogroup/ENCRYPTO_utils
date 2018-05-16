@@ -2,23 +2,6 @@
  \file 		djn.cpp
  \author 	Daniel Demmler
  \copyright Copyright (C) 2015 EC SPRIDE - daniel.demmler@ec-spride.de
-
- \brief		A library implementing the Damgaard Jurik Nielsen cryptosystem with s=1 (Same properties as Paillier, but more efficient).
- based on:<br>
- libdjn - A library implementing the Paillier cryptosystem.
- (http://hms.isi.jhu.edu/acsc/libdjn/)
- */
-
-/*
- libdjn - v0.9
- A library implementing the Damgaard Jurik Nielsen cryptosystem with s=1 (~Paillier).
- based on:
- libpaillier - A library implementing the Paillier cryptosystem.
- (http://hms.isi.jhu.edu/acsc/libpaillier/)
-
- 2015 EC SPRIDE
- daniel.demmler@ec-spride.de
-
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation; either version 2 of the License, or
@@ -28,12 +11,19 @@
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  General Public License for more details.
+
+ \brief
+ libdjn - v0.9
+ A library implementing the Damgaard Jurik Nielsen cryptosystem with s=1 (~Paillier).
+ based on:
+ libpaillier - A library implementing the Paillier cryptosystem.
+ (http://hms.isi.jhu.edu/acsc/libpaillier/)
  */
 
 #include "djn.h"
 
-#define DEBUG 0
-#define CHECKSIZE 0
+#define DJN_DEBUG 0
+#define DJN_CHECKSIZE 0
 
 void djn_complete_pubkey(unsigned int modulusbits, djn_pubkey_t** pub, mpz_t n, mpz_t h) {
 	*pub = (djn_pubkey_t*) malloc(sizeof(djn_pubkey_t));
@@ -55,7 +45,6 @@ void djn_complete_pubkey(unsigned int modulusbits, djn_pubkey_t** pub, mpz_t n, 
 
 void djn_keygen(unsigned int modulusbits, djn_pubkey_t** pub, djn_prvkey_t** prv) {
 	mpz_t test, x;
-//	gmp_randstate_t rnd;
 
 	/* allocate the new key structures */
 	*pub = (djn_pubkey_t*) malloc(sizeof(djn_pubkey_t));
@@ -82,15 +71,10 @@ void djn_keygen(unsigned int modulusbits, djn_pubkey_t** pub, djn_prvkey_t** prv
 	mpz_init(test);
 	mpz_init(x);
 
-//	gmp_randinit_default(rnd);
-//	gmp_randseed_ui(rnd, aby_rand());
-
 	do {
 		// choose bits of p and q randomly
-		//mpz_urandomb((*prv)->p, rnd, modulusbits / 2);
-		//mpz_urandomb((*prv)->q, rnd, modulusbits / 2);
-                aby_prng((*prv)->p, modulusbits / 2);
-                aby_prng((*prv)->q, modulusbits / 2);
+		aby_prng((*prv)->p, modulusbits / 2);
+		aby_prng((*prv)->q, modulusbits / 2);
 
 		// set highest bit to 1 to ensure high length
 		mpz_setbit((*prv)->p, modulusbits / 2);
@@ -121,9 +105,9 @@ void djn_keygen(unsigned int modulusbits, djn_pubkey_t** pub, djn_prvkey_t** prv
 	mpz_mul((*pub)->n, (*prv)->p, (*prv)->q);
 	mpz_mul((*pub)->n_squared, (*pub)->n, (*pub)->n);
 
-#if DEBUG
+#if DJN_DEBUG
 	if (!mpz_tstbit((*pub)->n, modulusbits - 1)) {
-		printf("n too small!?\n");
+		printf("DJN n too small!?\n");
 	}
 #endif
 
@@ -141,14 +125,14 @@ void djn_keygen(unsigned int modulusbits, djn_pubkey_t** pub, djn_prvkey_t** prv
 	mpz_mul((*prv)->q_squared_inverse, (*prv)->q_squared_inverse, (*prv)->q_squared);
 	mpz_mul((*prv)->q_inverse, (*prv)->q_inverse, (*prv)->q);
 
-#if DEBUG
+#if DJN_DEBUG
 	gmp_printf("p = %Zd\nq = %Zd\nn = %Zd\nn^2 = %Zd\n", (*prv)->p, (*prv)->q, (*pub)->n, (*pub)->n_squared);
 #endif
 
 	/* pick random x in Z_n^* */
 	do {
-		//mpz_urandomm(x, rnd, (*pub)->n);
-                aby_prng(x, mpz_sizeinbase((*pub)->n, 2) + 256);
+		// TODO: do we need the + 16 padding?
+		aby_prng(x, mpz_sizeinbase((*pub)->n, 2) + 16);
 		mpz_mod(x, x, (*pub)->n);
 		mpz_gcd(test, x, (*pub)->n);
 	} while (mpz_cmp_ui(test, 1));
@@ -174,35 +158,33 @@ void djn_keygen(unsigned int modulusbits, djn_pubkey_t** pub, djn_prvkey_t** prv
 	/* compute multiplicative inverse of lambda */
 	mpz_invert((*prv)->lambda_inverse, (*prv)->lambda, (*pub)->n);
 
-#if DEBUG
+#if DJN_DEBUG
 	gmp_printf("h = %Zd\nh_s = %Zd\n", (*pub)->h, (*pub)->h_s);
 	printf("rbits = %d, bits = %d\n", (*pub)->rbits, (*pub)->bits);
 	gmp_printf("lambda = %Zd\nlambda_inverse = %Zd\n", (*prv)->lambda, (*prv)->lambda_inverse);
 #endif
 
-	/* clear temporary integers and randstate */
+	/* clear temporary integers */
 	mpz_clears(x, test, NULL);
-	//gmp_randclear(rnd);
 }
 
 /**
  * encrypt plaintext to res
  */
-void djn_encrypt(mpz_t res, djn_pubkey_t* pub, mpz_t plaintext, gmp_randstate_t rnd) {
+void djn_encrypt(mpz_t res, djn_pubkey_t* pub, mpz_t plaintext) {
 	mpz_t r;
 	mpz_init(r);
 
-#if CHECKSIZE
+#if DJN_CHECKSIZE
 	if (mpz_cmp(plaintext, pub->n) >= 0) {
 		printf("WARNING: m>=N!\n");
 	}
 #endif
 
 	/* pick random blinding factor r */
-	//mpz_urandomb(r, rnd, pub->rbits);
-        aby_prng(r, pub->rbits);
+	aby_prng(r, pub->rbits);
 
-#if DEBUG
+#if DJN_DEBUG
 	gmp_printf("r = %Zd\n", r);
 #endif
 
@@ -221,21 +203,20 @@ void djn_encrypt(mpz_t res, djn_pubkey_t* pub, mpz_t plaintext, gmp_randstate_t 
 /**
  * encrypt plaintext using crt if private key is known
  */
-void djn_encrypt_crt(mpz_t res, djn_pubkey_t* pub, djn_prvkey_t* prv, mpz_t plaintext, gmp_randstate_t rnd) {
+void djn_encrypt_crt(mpz_t res, djn_pubkey_t* pub, djn_prvkey_t* prv, mpz_t plaintext) {
 	mpz_t r;
 	mpz_init(r);
 
-#if CHECKSIZE
+#if DJN_CHECKSIZE
 	if (mpz_cmp(plaintext, pub->n) >= 0) {
 		printf("WARNING: m>=N!\n");
 	}
 #endif
 
 	/* pick random blinding factor r */
-	//mpz_urandomb(r, rnd, pub->rbits);
-        aby_prng(r, pub->rbits);
+	aby_prng(r, pub->rbits);
 
-#if DEBUG
+#if DJN_DEBUG
 	gmp_printf("r = %Zd\n", r);
 #endif
 
@@ -254,21 +235,20 @@ void djn_encrypt_crt(mpz_t res, djn_pubkey_t* pub, djn_prvkey_t* prv, mpz_t plai
 /**
  * mpz_t version of encrypt_crt
  */
-void djn_encrypt_fb(mpz_t res, djn_pubkey_t* pub, mpz_t plaintext, gmp_randstate_t rnd) {
+void djn_encrypt_fb(mpz_t res, djn_pubkey_t* pub, mpz_t plaintext) {
 	mpz_t r;
 	mpz_init(r);
 
-#if checksize
+#if DJN_CHECKSIZE
 	if (mpz_cmp(plaintext, pub->n) >= 0) {
 		printf("WARNING: m>=N!\n");
 	}
 #endif
 
 	/* pick random blinding factor r */
-	//mpz_urandomb(r, rnd, pub->rbits);
-        aby_prng(r, pub->rbits);
+	aby_prng(r, pub->rbits);
 
-#if DEBUG
+#if DJN_DEBUG
 	gmp_printf("r = %Zd\n", r);
 #endif
 
@@ -319,8 +299,8 @@ void djn_freepubkey(djn_pubkey_t* pub) {
 }
 
 void djn_freeprvkey(djn_prvkey_t* prv) {
-	mpz_clears(prv->lambda, prv->lambda_inverse, prv->ordpsq, prv->ordqsq, prv->p, prv->p_minusone, prv->p_squared, prv->q, prv->q_minusone, prv->q_squared, prv->q_inverse,
-			prv->q_squared_inverse,
+	mpz_clears(prv->lambda, prv->lambda_inverse, prv->ordpsq, prv->ordqsq, prv->p, prv->p_minusone, prv->p_squared, prv->q,
+			prv->q_minusone, prv->q_squared, prv->q_inverse, prv->q_squared_inverse,
 			NULL);
 
 	free(prv);

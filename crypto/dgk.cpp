@@ -1,33 +1,9 @@
 /**
- \file 		dgk.h
+ \file 		dgk.cpp
  \author 	Daniel Demmler
  \copyright Copyright (C) 2015 EC SPRIDE - daniel.demmler@ec-spride.de
 
- \brief		 A library implementing the DGK crypto system with full decryption
- Thanks to Marina Blanton for sharing her Miracl DGK implementation from
- M. Blanton and P. Gasti, "Secure and efficient protocols for iris and fingerprint identification" (ESORICS’11)
- with us. We used it as a template for this GMP version.
-
- The implementation structure was inspired by
- libpailler - A library implementing the Paillier crypto system. (http://hms.isi.jhu.edu/acsc/libpaillier/)
-
- */
-
-/*
- libdgk - v0.9
- A library implementing the DGK crypto system with full decryption
-
- Thanks to Marina Blanton for sharing her Miracl DGK implementation from
- M. Blanton and P. Gasti, "Secure and efficient protocols for iris and fingerprint identification" (ESORICS’11)
- with us. We used it as a template for this GMP version.
-
- The implementation structure was inspired by
- libpailler - A library implementing the Paillier crypto system. (http://hms.isi.jhu.edu/acsc/libpaillier/)
-
- Copyright (C) 2015 EC SPRIDE
- daniel.demmler@ec-spride.de
-
- This program is free software; you can redistribute it and/or modify
+  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation; either version 2 of the License, or
  (at your option) any later version.
@@ -36,6 +12,15 @@
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  General Public License for more details.
+
+ \brief		 libdgk - v0.9
+ A library implementing the DGK crypto system with full decryption
+ Thanks to Marina Blanton for sharing her Miracl DGK implementation from
+ M. Blanton and P. Gasti, "Secure and efficient protocols for iris and fingerprint identification" (ESORICS’11)
+ with us. We used it as a template for this GMP version.
+
+ The implementation structure was inspired by
+ libpailler - A library implementing the Paillier crypto system. (http://hms.isi.jhu.edu/acsc/libpaillier/)
  */
 
 #include "dgk.h"
@@ -70,7 +55,6 @@ void dgk_complete_pubkey(unsigned int modulusbits, unsigned int lbits, dgk_pubke
 
 void dgk_keygen(unsigned int modulusbits, unsigned int lbits, dgk_pubkey_t** pub, dgk_prvkey_t** prv) {
 	mpz_t tmp, tmp2, f1, f2, exp1, exp2, exp3, xp, xq;
-//	gmp_state_t rnd;
 
 	unsigned int found = 0, i;
 
@@ -102,16 +86,11 @@ void dgk_keygen(unsigned int modulusbits, unsigned int lbits, dgk_pubkey_t** pub
 	(*pub)->bits = modulusbits;
 	(*pub)->lbits = lbits;
 
-//	gmp_randinit_default(rnd);
-//	gmp_randseed_ui(rnd, aby_rand());
-
 	// vp and vq are primes
-	//mpz_urandomb((*prv)->vp, rnd, 160);
-        aby_prng((*prv)->vp, 160);
+	aby_prng((*prv)->vp, 160);
 	mpz_nextprime((*prv)->vp, (*prv)->vp);
 
-	//mpz_urandomb((*prv)->vq, rnd, 160);
-        aby_prng((*prv)->vq, 160);
+	aby_prng((*prv)->vq, 160);
 	do {
 		mpz_nextprime((*prv)->vq, (*prv)->vq);
 	} while (mpz_cmp((*prv)->vp, (*prv)->vq) == 0);
@@ -121,8 +100,7 @@ void dgk_keygen(unsigned int modulusbits, unsigned int lbits, dgk_pubkey_t** pub
 
 	// p
 	while (!found) {
-		//mpz_urandomb(f1, rnd, modulusbits / 2 - 160 - lbits);
-                aby_prng(f1, modulusbits / 2 - 160 - lbits);
+		aby_prng(f1, modulusbits / 2 - 160 - lbits);
 		mpz_nextprime(f1, f1);
 
 		mpz_mul((*prv)->p, (*pub)->u, (*prv)->vp);
@@ -134,8 +112,7 @@ void dgk_keygen(unsigned int modulusbits, unsigned int lbits, dgk_pubkey_t** pub
 
 	// q
 	while (!found) {
-		//mpz_urandomb(f2, rnd, modulusbits / 2 - 159 - lbits);
-                aby_prng(f2, modulusbits / 2 - 159 - lbits);
+		aby_prng(f2, modulusbits / 2 - 159 - lbits);
 		mpz_nextprime(f2, f2);
 
 		mpz_mul((*prv)->q, (*pub)->u, (*prv)->vq);
@@ -161,9 +138,9 @@ void dgk_keygen(unsigned int modulusbits, unsigned int lbits, dgk_pubkey_t** pub
 
 	// xp
 	while (!found) {
-		//mpz_urandomm(xp, rnd, (*prv)->p);
-                aby_prng(xp, mpz_sizeinbase((*prv)->p, 2) + 256);
-                mpz_mod(xp, xp, (*prv)->p);
+		// TODO: do we need the + 16 padding?
+		aby_prng(xp, mpz_sizeinbase((*prv)->p, 2) + 16);
+		mpz_mod(xp, xp, (*prv)->p);
 
 		mpz_powm(tmp, xp, exp1, (*prv)->p);
 		if (mpz_cmp_ui(tmp, 1) != 0) {
@@ -187,9 +164,9 @@ void dgk_keygen(unsigned int modulusbits, unsigned int lbits, dgk_pubkey_t** pub
 
 	// xq
 	while (!found) {
-//		mpz_urandomm(xq, rnd, (*prv)->q);
-                aby_prng(xq, mpz_sizeinbase((*prv)->q, 2) + 256);
-                mpz_mod(xq, xq, (*prv)->q);
+		// TODO: do we need the + 16 padding?
+		aby_prng(xq, mpz_sizeinbase((*prv)->q, 2) + 16);
+		mpz_mod(xq, xq, (*prv)->q);
 
 		mpz_powm(tmp, xq, exp1, (*prv)->q);
 		if (mpz_cmp_ui(tmp, 1) != 0) {
@@ -227,9 +204,9 @@ void dgk_keygen(unsigned int modulusbits, unsigned int lbits, dgk_pubkey_t** pub
 	mpz_mul(tmp, f1, f2); // tmp = f1*f2
 	mpz_powm((*pub)->g, (*pub)->g, tmp, (*pub)->n); // g = g^tmp % n
 
-	//mpz_urandomm((*pub)->h, rnd, (*pub)->n);
-        aby_prng((*pub)->h, mpz_sizeinbase((*pub)->n, 2) + 256);
-        mpz_mod((*pub)->h, (*pub)->h, (*pub)->n);
+	// TODO: do we need the + 16 padding?
+	aby_prng((*pub)->h, mpz_sizeinbase((*pub)->n, 2) + 16);
+	mpz_mod((*pub)->h, (*pub)->h, (*pub)->n);
 
 	mpz_mul(tmp, tmp, (*pub)->u);
 	mpz_powm((*pub)->h, (*pub)->h, tmp, (*pub)->n); // h = h^tmp % n
@@ -253,13 +230,11 @@ void dgk_keygen(unsigned int modulusbits, unsigned int lbits, dgk_pubkey_t** pub
 		mpz_powm(gvpvqp[i], gvpvqp[i], tmp2, (*prv)->p);
 	}
 
-	/* clear temporary integers and randstate */
+	/* clear temporary integers */
 	mpz_clears(tmp, tmp2, f1, f2, exp1, exp2, exp3, xp, xq, NULL);
-//	gmp_randclear(rnd);
-
 }
 
-void dgk_encrypt_db(mpz_t res, dgk_pubkey_t* pub, mpz_t plaintext, gmp_randstate_t rnd) {
+void dgk_encrypt_db(mpz_t res, dgk_pubkey_t* pub, mpz_t plaintext) {
 	mpz_t r;
 	mpz_init(r);
 
@@ -272,15 +247,14 @@ void dgk_encrypt_db(mpz_t res, dgk_pubkey_t* pub, mpz_t plaintext, gmp_randstate
 #endif
 
 	/* pick random blinding factor r */
-	//mpz_urandomb(r, rnd, 400); // 2.5 * 160 = 400 bit
-        aby_prng(r, 400);
+	aby_prng(r, 400); // 2.5 * 160 = 400 bit
 
 	dbpowmod(res, pub->h, r, pub->g, plaintext, pub->n);
 
 	mpz_clear(r);
 }
 
-void dgk_encrypt_fb(mpz_t res, dgk_pubkey_t* pub, mpz_t plaintext, gmp_randstate_t rnd) {
+void dgk_encrypt_fb(mpz_t res, dgk_pubkey_t* pub, mpz_t plaintext) {
 	mpz_t r;
 	mpz_init(r);
 
@@ -293,8 +267,7 @@ void dgk_encrypt_fb(mpz_t res, dgk_pubkey_t* pub, mpz_t plaintext, gmp_randstate
 #endif
 
 	/* pick random blinding factor r */
-	//mpz_urandomb(r, rnd, 400); // 2.5 * 160 = 400 bit
-        aby_prng(r, 400);
+	aby_prng(r, 400); // 2.5 * 160 = 400 bit
 	fbpowmod_h(r, r); //r = h^r
 	fbpowmod_g(res, plaintext); //res = g^plaintext
 
@@ -304,7 +277,7 @@ void dgk_encrypt_fb(mpz_t res, dgk_pubkey_t* pub, mpz_t plaintext, gmp_randstate
 	mpz_clear(r);
 }
 
-void dgk_encrypt_plain(mpz_t res, dgk_pubkey_t* pub, mpz_t plaintext, gmp_randstate_t rnd) {
+void dgk_encrypt_plain(mpz_t res, dgk_pubkey_t* pub, mpz_t plaintext) {
 	mpz_t r;
 	mpz_init(r);
 
@@ -317,8 +290,7 @@ void dgk_encrypt_plain(mpz_t res, dgk_pubkey_t* pub, mpz_t plaintext, gmp_randst
 #endif
 
 	/* pick random blinding factor r */
-	//mpz_urandomb(r, rnd, 400); // 2.5 * 160 = 400 bit
-        aby_prng(r, 400);
+	aby_prng(r, 400); // 2.5 * 160 = 400 bit
 	mpz_powm(r, pub->h, r, pub->n);
 	mpz_powm(res, pub->g, plaintext, pub->n);
 
@@ -328,7 +300,7 @@ void dgk_encrypt_plain(mpz_t res, dgk_pubkey_t* pub, mpz_t plaintext, gmp_randst
 	mpz_clear(r);
 }
 
-void dgk_encrypt_crt_db(mpz_t res, dgk_pubkey_t * pub, dgk_prvkey_t * prv, mpz_t plaintext, gmp_randstate_t rnd) {
+void dgk_encrypt_crt_db(mpz_t res, dgk_pubkey_t * pub, dgk_prvkey_t * prv, mpz_t plaintext) {
 	mpz_t r, ep;
 	mpz_inits(r, ep, NULL);
 
@@ -342,7 +314,7 @@ void dgk_encrypt_crt_db(mpz_t res, dgk_pubkey_t * pub, dgk_prvkey_t * prv, mpz_t
 
 	/* pick random blinding factor r */
 	//mpz_urandomb(r, rnd, 400); // 2.5 * 160 = 400 bit
-        aby_prng(r, 400);
+	aby_prng(r, 400);
 	dbpowmod(ep, pub->h, r, pub->g, plaintext, prv->p);
 
 	mpz_mul(res, ep, prv->q);
@@ -361,7 +333,7 @@ void dgk_encrypt_crt_db(mpz_t res, dgk_pubkey_t * pub, dgk_prvkey_t * prv, mpz_t
 	mpz_clears(r, ep, NULL);
 }
 
-void dgk_encrypt_crt(mpz_t res, dgk_pubkey_t * pub, dgk_prvkey_t * prv, mpz_t plaintext, gmp_randstate_t rnd) {
+void dgk_encrypt_crt(mpz_t res, dgk_pubkey_t * pub, dgk_prvkey_t * prv, mpz_t plaintext) {
 	mpz_t r, ep, eq;
 	mpz_inits(r, ep, eq, NULL);
 
@@ -374,8 +346,7 @@ void dgk_encrypt_crt(mpz_t res, dgk_pubkey_t * pub, dgk_prvkey_t * prv, mpz_t pl
 #endif
 
 	/* pick random blinding factor r */
-	//mpz_urandomb(r, rnd, 400); // 2.5 * 160 = 400 bit
-        aby_prng(r, 400);
+	aby_prng(r, 400); // 2.5 * 160 = 400 bit
 	// ep = h^r * g^plaintext % p
 	mpz_powm(ep, pub->h, r, prv->p);
 	mpz_powm(res, pub->g, plaintext, prv->p);
@@ -585,11 +556,6 @@ void dgk_readkey(unsigned int modulusbits, unsigned int lbits, dgk_pubkey_t** pu
 }
 
 void createKeys() {
-	gmp_randstate_t rnd;
-
-//	gmp_randinit_default(rnd);
-//	gmp_randseed_ui(rnd, rand());
-
 	dgk_pubkey_t * pub;
 	dgk_prvkey_t * prv;
 
@@ -610,7 +576,7 @@ void createKeys() {
 				int maxit = 1 << l;
 				for (int i = 0; i < maxit; i++) {
 					mpz_set_ui(msg, i);
-					dgk_encrypt_plain(ct, pub, msg, rnd);
+					dgk_encrypt_plain(ct, pub, msg);
 					dgk_decrypt(msg2, pub, prv, ct);
 
 					if (mpz_cmp(msg, msg2)) {
@@ -637,8 +603,7 @@ void createKeys() {
 				for (int i = 0; i < KEYTEST_ITERATIONS; i++) {
 
 					if (i > 3) {
-						//mpz_urandomb(msg, rnd, l);
-                                            aby_prng(msg,l);
+						aby_prng(msg, l);
 					}
 					// test some corner cases first: 0, 1, 2^l-1, 2^l-2. After that random numbers.
 					else if (i == 0)
@@ -653,7 +618,7 @@ void createKeys() {
 						mpz_sub_ui(msg, msg, 1);
 					}
 
-					dgk_encrypt_plain(ct, pub, msg, rnd);
+					dgk_encrypt_plain(ct, pub, msg);
 					dgk_decrypt(msg2, pub, prv, ct);
 
 					if (mpz_cmp(msg, msg2)) {
@@ -690,11 +655,6 @@ void createKeys() {
 }
 
 void test_encdec() {
-	gmp_randstate_t rnd;
-
-//	gmp_randinit_default(rnd);
-//	gmp_randseed_ui(rnd, rand());
-
 	dgk_pubkey_t * pub;
 	dgk_prvkey_t * prv;
 
@@ -709,9 +669,8 @@ void test_encdec() {
 	//dgk_keygen(nbit, l, &pub, &prv);
 	dgk_readkey(nbit, l, &pub, &prv);
 
-	//mpz_urandomb(a0, rnd, l);
-        aby_prng(a0, l);
-	dgk_encrypt_crt(a0c, pub, prv, a0, rnd); //encrypt a0
+	aby_prng(a0, l);
+	dgk_encrypt_crt(a0c, pub, prv, a0); //encrypt a0
 
 	dgk_decrypt(b0, pub, prv, a0c);
 
@@ -722,7 +681,7 @@ void test_encdec() {
 		gmp_printf("%Zd, %Zd", a0, b0);
 	}
 
-	dgk_encrypt_plain(a0c, pub, a0, rnd);
+	dgk_encrypt_plain(a0c, pub, a0);
 	dgk_decrypt(b0, pub, prv, a0c);
 
 	if (mpz_cmp(a0, b0) == 0) {
@@ -734,11 +693,6 @@ void test_encdec() {
 }
 
 void test_sharing() {
-	gmp_randstate_t rnd;
-
-//	gmp_randinit_default(rnd);
-//	gmp_randseed_ui(rnd, rand());
-
 	dgk_pubkey_t * pub;
 	dgk_prvkey_t * prv;
 
@@ -754,25 +708,20 @@ void test_sharing() {
 	dgk_readkey(nbit, l, &pub, &prv);
 
 	// choose random a and b shares, l bits long
-	//mpz_urandomb(a0, rnd, l);
-	//mpz_urandomb(b0, rnd, l);
-	//mpz_urandomb(a1, rnd, l);
-	//mpz_urandomb(b1, rnd, l);
-        aby_prng(a0, l);
-        aby_prng(b0, l);
-        aby_prng(a1, l);
-        aby_prng(b1, l);
+	aby_prng(a0, l);
+	aby_prng(b0, l);
+	aby_prng(a1, l);
+	aby_prng(b1, l);
 
 	gmp_printf("a0,b0: %Zd %Zd \n", a0, b0);
 	gmp_printf("a1,b1: %Zd %Zd \n", a1, b1);
 
 	// choose random r for masking
-	//mpz_urandomb(r, rnd, 2 * l + 2);
-        aby_prng(r, 2 * l + 2);
+	aby_prng(r, 2 * l + 2);
 
-	dgk_encrypt_plain(a0c, pub, a0, rnd); //encrypt a0
-	dgk_encrypt_plain(b0c, pub, b0, rnd); //encrypt b0
-	dgk_encrypt_plain(rc, pub, r, rnd); //encrypt r
+	dgk_encrypt_plain(a0c, pub, a0); //encrypt a0
+	dgk_encrypt_plain(b0c, pub, b0); //encrypt b0
+	dgk_encrypt_plain(rc, pub, r); //encrypt r
 
 	mpz_mul(c1, a1, b1);
 	mpz_mod_2exp(c1, c1, l);

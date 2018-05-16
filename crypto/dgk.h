@@ -3,31 +3,7 @@
  \author 	Daniel Demmler
  \copyright Copyright (C) 2015 EC SPRIDE - daniel.demmler@ec-spride.de
 
- \brief		 A library implementing the DGK crypto system with full decryption
- Thanks to Marina Blanton for sharing her Miracl DGK implementation from
- M. Blanton and P. Gasti, "Secure and efficient protocols for iris and fingerprint identification" (ESORICS’11)
- with us. We used it as a template for this GMP version.
-
- The implementation structure was inspired by
- libpailler - A library implementing the Paillier crypto system. (http://hms.isi.jhu.edu/acsc/libpaillier/)
-
- */
-
-/*
- libdgk - v0.9
- A library implementing the DGK crypto system with full decryption
-
- Thanks to Marina Blanton for sharing her Miracl DGK implementation from
- M. Blanton and P. Gasti, "Secure and efficient protocols for iris and fingerprint identification" (ESORICS’11)
- with us. We used it as a template for this GMP version.
-
- The implementation structure was inspired by
- libpailler - A library implementing the Paillier crypto system. (http://hms.isi.jhu.edu/acsc/libpaillier/)
-
- Copyright (C) 2015 EC SPRIDE
- daniel.demmler@ec-spride.de
-
- This program is free software; you can redistribute it and/or modify
+  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation; either version 2 of the License, or
  (at your option) any later version.
@@ -36,6 +12,15 @@
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  General Public License for more details.
+
+ \brief		 libdgk - v0.9
+ A library implementing the DGK crypto system with full decryption
+ Thanks to Marina Blanton for sharing her Miracl DGK implementation from
+ M. Blanton and P. Gasti, "Secure and efficient protocols for iris and fingerprint identification" (ESORICS’11)
+ with us. We used it as a template for this GMP version.
+
+ The implementation structure was inspired by
+ libpailler - A library implementing the Paillier crypto system. (http://hms.isi.jhu.edu/acsc/libpaillier/)
  */
 
 #ifndef _DGK_H_
@@ -90,26 +75,26 @@ void dgk_keygen(unsigned int modulusbits, unsigned int lbits, dgk_pubkey_t** pub
 /**
  * encrypt with public key only and double-base encryption - unfortunately not efficient due to different sized exponents, therefore deactivated
  */
-//void dgk_encrypt_db(mpz_t res, dgk_pubkey_t* pub, mpz_t pt, gmp_randstate_t rnd);
+//void dgk_encrypt_db(mpz_t res, dgk_pubkey_t* pub, mpz_t pt);
 /**
  * encrypt with public key only, fixed-base encryption (must be initialized before first use!)
  */
-void dgk_encrypt_fb(mpz_t res, dgk_pubkey_t* pub, mpz_t pt, gmp_randstate_t rnd);
+void dgk_encrypt_fb(mpz_t res, dgk_pubkey_t* pub, mpz_t pt);
 
 /**
  * encrypt with public key only, no further optimization (slower than fixed-base encryption)
  */
-void dgk_encrypt_plain(mpz_t res, dgk_pubkey_t* pub, mpz_t pt, gmp_randstate_t rnd);
+void dgk_encrypt_plain(mpz_t res, dgk_pubkey_t* pub, mpz_t pt);
 
 /**
  * encrypt using CRT if we have the private key for efficiency
  */
-void dgk_encrypt_crt(mpz_t res, dgk_pubkey_t* pub, dgk_prvkey_t* prv, mpz_t pt, gmp_randstate_t rnd);
+void dgk_encrypt_crt(mpz_t res, dgk_pubkey_t* pub, dgk_prvkey_t* prv, mpz_t pt);
 
 /**
  * use CRT and double base combined - unfortunately not efficient due to different sized exponents, therefore deactivated
  */
-// void dgk_encrypt_crt_db(mpz_t res, dgk_pubkey_t* pub, dgk_prvkey_t* prv, mpz_t pt, gmp_randstate_t rnd);
+// void dgk_encrypt_crt_db(mpz_t res, dgk_pubkey_t* pub, dgk_prvkey_t* prv, mpz_t pt);
 /**
  * DGK decryption
  */

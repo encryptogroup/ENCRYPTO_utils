@@ -2,23 +2,6 @@
  \file 		djn.h
  \author 	Daniel Demmler
  \copyright Copyright (C) 2015 EC SPRIDE - daniel.demmler@ec-spride.de
-
- \brief		A library implementing the Damgaard Jurik Nielsen cryptosystem with s=1 (Same properties as Paillier, but more efficient).
- based on:<br>
- libdjn - A library implementing the Paillier cryptosystem.
- (http://hms.isi.jhu.edu/acsc/libdjn/)
- */
-
-/*
- libdjn - v0.9
- A library implementing the Damgaard Jurik Nielsen cryptosystem with s=1 (~Paillier).
- based on:
- libpaillier - A library implementing the Paillier cryptosystem.
- (http://hms.isi.jhu.edu/acsc/libpaillier/)
-
- 2015 EC SPRIDE
- daniel.demmler@ec-spride.de
-
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation; either version 2 of the License, or
@@ -28,6 +11,13 @@
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  General Public License for more details.
+
+ \brief
+ libdjn - v0.9
+ A library implementing the Damgaard Jurik Nielsen cryptosystem with s=1 (~Paillier).
+ based on:
+ libpaillier - A library implementing the Paillier cryptosystem.
+ (http://hms.isi.jhu.edu/acsc/libpaillier/)
  */
 
 #ifndef _DJN_H_
@@ -120,7 +110,7 @@ void djn_keygen(unsigned int modulusbits, djn_pubkey_t** pub, djn_prvkey_t** prv
  contents will be overwritten with the result. Otherwise, a new
  djn_ciphertext_t will be allocated and returned.
  */
-void djn_encrypt(mpz_t res, djn_pubkey_t* pub, mpz_t pt, gmp_randstate_t rnd);
+void djn_encrypt(mpz_t res, djn_pubkey_t* pub, mpz_t pt);
 
 /*
  Encrypt the given plaintext with the given public key using
@@ -128,12 +118,12 @@ void djn_encrypt(mpz_t res, djn_pubkey_t* pub, mpz_t pt, gmp_randstate_t rnd);
  contents will be overwritten with the result. Otherwise, a new
  djn_ciphertext_t will be allocated and returned.
  */
-void djn_encrypt_crt(mpz_t res, djn_pubkey_t* pub, djn_prvkey_t* prv, mpz_t pt, gmp_randstate_t rnd);
+void djn_encrypt_crt(mpz_t res, djn_pubkey_t* pub, djn_prvkey_t* prv, mpz_t pt);
 
 /**
  * fixed base encryption. Requires pre-computed fixed base table.
  */
-void djn_encrypt_fb(mpz_t res, djn_pubkey_t* pub, mpz_t plaintext, gmp_randstate_t rnd);
+void djn_encrypt_fb(mpz_t res, djn_pubkey_t* pub, mpz_t plaintext);
 
 /*
  Decrypt the given ciphertext with the given key pair. If res is not
