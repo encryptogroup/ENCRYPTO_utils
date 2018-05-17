@@ -131,8 +131,7 @@ void djn_keygen(unsigned int modulusbits, djn_pubkey_t** pub, djn_prvkey_t** prv
 
 	/* pick random x in Z_n^* */
 	do {
-		// TODO: do we need the + 16 padding?
-		aby_prng(x, mpz_sizeinbase((*pub)->n, 2) + 16);
+		aby_prng(x, mpz_sizeinbase((*pub)->n, 2) + 128);
 		mpz_mod(x, x, (*pub)->n);
 		mpz_gcd(test, x, (*pub)->n);
 	} while (mpz_cmp_ui(test, 1));

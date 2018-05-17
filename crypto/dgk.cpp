@@ -138,8 +138,7 @@ void dgk_keygen(unsigned int modulusbits, unsigned int lbits, dgk_pubkey_t** pub
 
 	// xp
 	while (!found) {
-		// TODO: do we need the + 16 padding?
-		aby_prng(xp, mpz_sizeinbase((*prv)->p, 2) + 16);
+		aby_prng(xp, mpz_sizeinbase((*prv)->p, 2) + 128);
 		mpz_mod(xp, xp, (*prv)->p);
 
 		mpz_powm(tmp, xp, exp1, (*prv)->p);
@@ -164,8 +163,7 @@ void dgk_keygen(unsigned int modulusbits, unsigned int lbits, dgk_pubkey_t** pub
 
 	// xq
 	while (!found) {
-		// TODO: do we need the + 16 padding?
-		aby_prng(xq, mpz_sizeinbase((*prv)->q, 2) + 16);
+		aby_prng(xq, mpz_sizeinbase((*prv)->q, 2) + 128);
 		mpz_mod(xq, xq, (*prv)->q);
 
 		mpz_powm(tmp, xq, exp1, (*prv)->q);
@@ -204,8 +202,7 @@ void dgk_keygen(unsigned int modulusbits, unsigned int lbits, dgk_pubkey_t** pub
 	mpz_mul(tmp, f1, f2); // tmp = f1*f2
 	mpz_powm((*pub)->g, (*pub)->g, tmp, (*pub)->n); // g = g^tmp % n
 
-	// TODO: do we need the + 16 padding?
-	aby_prng((*pub)->h, mpz_sizeinbase((*pub)->n, 2) + 16);
+	aby_prng((*pub)->h, mpz_sizeinbase((*pub)->n, 2) + 128);
 	mpz_mod((*pub)->h, (*pub)->h, (*pub)->n);
 
 	mpz_mul(tmp, tmp, (*pub)->u);
