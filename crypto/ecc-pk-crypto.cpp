@@ -17,9 +17,9 @@
  */
 
 #include "ecc-pk-crypto.h"
-#include "../miracl_lib/ecn.h"
-#include "../miracl_lib/big.h"
-#include "../miracl_lib/ec2.h"
+#include <ecn.h>
+#include <big.h>
+#include <ec2.h>
 
 char *ecx163 = (char *) "2fe13c0537bbc11acaa07d793de4e6d5e5c94eee8";
 char *ecy163 = (char *) "289070fb05d38ff58321f2e800536d538ccdaa3d9";
