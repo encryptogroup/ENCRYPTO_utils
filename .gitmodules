@@ -1,3 +1,5 @@
-[submodule "Miracl"]
-	path = Miracl
-	url = https://github.com/miracl/MIRACL.git
+[submodule "extern/MIRACL"]
+	path = extern/MIRACL
+	url = ../MIRACL.git
+	branch = feature-cmake
+	ignore = dirty
