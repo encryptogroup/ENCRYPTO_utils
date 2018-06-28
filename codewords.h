@@ -19,7 +19,8 @@
 #ifndef __CODEWORDS_H_
 #define __CODEWORDS_H_
 
-#include "typedefs.h"
+#include <cstdint>
+#include <cstdlib>
 
 static const uint32_t m_nCodewords = 256;
 static const uint32_t m_nCWIntlen = 8;

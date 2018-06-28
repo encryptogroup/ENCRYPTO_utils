@@ -19,11 +19,8 @@
 #ifndef UTIL_PARSE_OPTIONS_H_
 #define UTIL_PARSE_OPTIONS_H_
 
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <iostream>
-#include <stdint.h>
+#include <cstdint>
+#include <string>
 #include <vector>
 
 /**

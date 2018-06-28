@@ -21,6 +21,9 @@
  */
 
 #include "djn.h"
+#include "../powmod.h"
+#include "../utils.h"
+#include <cstdlib>
 
 #define DJN_DEBUG 0
 #define DJN_CHECKSIZE 0

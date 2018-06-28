@@ -19,15 +19,6 @@
 #ifndef __TYPEDEFS_H__
 #define __TYPEDEFS_H__
 
-#include <sys/time.h>
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <cstring>
-#include <string>
-#include <vector>
-#include <iostream>
-
 typedef struct SECURITYLEVELS {
 	int statbits;
 	int symbits;
@@ -101,35 +92,6 @@ T sub(T a, T b, T m) {
 #define MAX_BYTE 0xFF
 #define MAX_UINT MAX_INT
 
-#ifdef WIN32
-#include <WinSock2.h>
-#include <windows.h>
-
-typedef unsigned short USHORT;
-typedef int socklen_t;
-#pragma comment(lib, "wsock32.lib")
-
-#define SleepMiliSec(x)	Sleep(x)
-
-#else //WIN32
-
-#include <sys/types.h>       
-#include <sys/socket.h>      
-#include <netdb.h>           
-#include <arpa/inet.h>       
-#include <unistd.h>          
-#include <netinet/in.h>   
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <netinet/tcp.h>
-#include <queue>
-
-typedef int SOCKET;
-#define INVALID_SOCKET -1
-
-#define SleepMiliSec(x)			usleep((x)<<10)
-#endif //WIN32
 
 #endif //__TYPEDEFS_H__
 

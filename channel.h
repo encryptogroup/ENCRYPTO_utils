@@ -8,10 +8,12 @@
 #ifndef CHANNEL_H_
 #define CHANNEL_H_
 
-#include "typedefs.h"
-#include "socket.h"
 #include "rcvthread.h"
 #include "sndthread.h"
+#include <cassert>
+#include <cstdint>
+#include <cstring>
+#include <queue>
 
 class channel {
 public:

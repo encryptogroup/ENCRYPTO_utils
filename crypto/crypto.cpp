@@ -17,6 +17,11 @@
  */
 
 #include "crypto.h"
+#include <openssl/sha.h>
+#include <openssl/des.h>
+#include "ecc-pk-crypto.h"
+#include "gmp-pk-crypto.h"
+#include <utility>
 
 crypto::crypto(uint32_t symsecbits, uint8_t* seed) {
 	init(symsecbits, seed);
@@ -305,7 +310,7 @@ void crypto::gen_rnd_perm(uint32_t* perm, uint32_t neles) {
 	}
 	for (i = 0; i < neles; i++) {
 		j = rndbuf[i] % neles; //NOT UNIFORM
-		swap(perm[i], perm[j]);
+		std::swap(perm[i], perm[j]);
 	}
 	free(rndbuf);
 }

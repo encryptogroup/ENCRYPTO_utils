@@ -20,6 +20,7 @@
 #define _CONSTANTS_H_
 
 #include "typedefs.h"
+#include <cstdint>
 
 #define BATCH
 //#define FIXED_KEY_AES_HASHING

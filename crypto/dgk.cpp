@@ -24,6 +24,10 @@
  */
 
 #include "dgk.h"
+#include "../powmod.h"
+#include "../utils.h"
+#include <cstdlib>
+#include <cstring>
 
 #define DGK_CHECKSIZE 0
 

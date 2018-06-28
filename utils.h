@@ -1,10 +1,11 @@
 #ifndef _UTILS_H__
 #define _UTILS_H__
 
-#include <iostream>
+#include <cstdint>
 #include <fcntl.h>
 #include <gmp.h>
-#include "typedefs.h"
+#include <iostream>
+#include <unistd.h>
 
 #define two_pow(e) (((uint64_t) 1) << (e))
 

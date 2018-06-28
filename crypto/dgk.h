@@ -26,13 +26,6 @@
 #ifndef _DGK_H_
 #define _DGK_H_
 #include <gmp.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
-#include "../powmod.h"
-#include "../timer.h"
-#include "../utils.h"
 
 /*
  This represents a DGK public key.

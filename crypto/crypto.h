@@ -20,22 +20,11 @@
 #define CRYPTO_H_
 
 #include <openssl/evp.h>
-#include <openssl/sha.h>
-#include <openssl/des.h>
-#include <fstream>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <iostream>
-#include <iomanip>
-
-#include "../typedefs.h"
 #include "../constants.h"
-#include "gmp-pk-crypto.h"
-#include "ecc-pk-crypto.h"
 #include "../socket.h"
 
-#include "TedKrovetzAesNiWrapperC.h"
-#include "intrin_sequential_enc8.h"
+// forward declarations
+class pk_crypto;
 
 const uint8_t ZERO_IV[AES_BYTES] = { 0 };
 

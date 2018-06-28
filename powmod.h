@@ -19,8 +19,6 @@
 #ifndef _POWMOD_H_
 #define _POWMOD_H_
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <gmp.h>
 
 extern mpz_t* m_table_g;
