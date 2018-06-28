@@ -1,7 +1,7 @@
 #ifndef _FILEOPS_H_
 #define _FILEOPS_H_
 
-#include <stdio.h>
+#include <cstdint>
 #include "typedefs.h"
 
 	//TODO move to utils

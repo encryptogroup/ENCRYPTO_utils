@@ -17,6 +17,11 @@
  */
 
 #include "cbitvector.h"
+#include "crypto/crypto.h"
+#include "utils.h"
+#include <algorithm>
+#include <iomanip>
+#include <iostream>
 
 /* Fill random values using the pre-defined AES key */
 void CBitVector::FillRand(uint32_t bits, crypto* crypt) {
@@ -286,7 +291,7 @@ template<class T> void CBitVector::GetBytes(T* dst, T* src, T* lim) {
 //optimized bytewise XOR operation
 void CBitVector::XORBytes(BYTE* p, int pos, int len) {
 	if(pos + len > m_nByteSize)
-	cout << "pos = " << pos << ", len = " << len << ", bytesize = " << m_nByteSize << endl;
+	std::cout << "pos = " << pos << ", len = " << len << ", bytesize = " << m_nByteSize << std::endl;
 	assert(pos + len <= m_nByteSize);
 
 	BYTE* dst = m_pBits + pos;
@@ -392,28 +397,28 @@ void CBitVector::CLShift(uint64_t pos) {
 void CBitVector::Print(int fromBit, int toBit) {
 	int to = toBit > (m_nByteSize << 3) ? (m_nByteSize << 3) : toBit;
 	for (int i = fromBit; i < to; i++) {
-		cout << (unsigned int) GetBitNoMask(i);
+		std::cout << (unsigned int) GetBitNoMask(i);
 	}
-	cout << endl;
+	std::cout << std::endl;
 }
 
 void CBitVector::PrintHex(int fromByte, int toByte, bool linebreak) {
 	int to = toByte > (m_nByteSize) ? (m_nByteSize) : toByte;
 
 	for (int i = fromByte; i < to; i++) {
-		cout << setw(2) << setfill('0') << (hex) << ((unsigned int) m_pBits[i]);
+		std::cout << std::setw(2) << std::setfill('0') << (std::hex) << ((unsigned int) m_pBits[i]);
 	}
 	if(linebreak){
-		cout << (dec) << endl;
+		std::cout << (std::dec) << std::endl;
 	}
 }
 
 void CBitVector::PrintHex(bool linebreak) {
 	for (int i = 0; i < m_nByteSize; i++) {
-		cout << setw(2) << setfill('0') << (hex) << ((unsigned int) m_pBits[i]);
+		std::cout << std::setw(2) << std::setfill('0') << (std::hex) << ((unsigned int) m_pBits[i]);
 	}
 	if(linebreak){
-		cout << (dec) << endl;
+		std::cout << (std::dec) << std::endl;
 	}
 }
 
@@ -421,9 +426,9 @@ void CBitVector::PrintBinaryMasked(int from, int to) {
 	int new_to = to > (m_nByteSize<<3) ? (m_nByteSize<<3) : to;
 
 	for (int i = from; i < new_to; i++) {
-		cout << (unsigned int) GetBit(i);
+		std::cout << (unsigned int) GetBit(i);
 	}
-	cout << endl;
+	std::cout << std::endl;
 }
 
 void CBitVector::PrintContent() {
@@ -433,19 +438,19 @@ void CBitVector::PrintContent() {
 	}
 	if (m_nNumElementsDimB == 1) {
 		for (int i = 0; i < m_nNumElements; i++) {
-			cout << Get<int>(i) << ", ";
+			std::cout << Get<int>(i) << ", ";
 		}
-		cout << endl;
+		std::cout << std::endl;
 	} else {
 		for (int i = 0; i < m_nNumElements; i++) {
-			cout << "(";
+			std::cout << "(";
 			for (int j = 0; j < m_nNumElementsDimB - 1; j++) {
-				cout << Get2D<int>(i, j) << ", ";
+				std::cout << Get2D<int>(i, j) << ", ";
 			}
-			cout << Get2D<int>(i, m_nNumElementsDimB - 1);
-			cout << "), ";
+			std::cout << Get2D<int>(i, m_nNumElementsDimB - 1);
+			std::cout << "), ";
 		}
-		cout << endl;
+		std::cout << std::endl;
 	}
 }
 
@@ -482,10 +487,10 @@ void CBitVector::XOR_no_mask(int p, int bitPos, int bitLen) {
 
 	int i = bitPos >> 3, j = 8 - (bitPos & 0x7), k;
 
-	m_pBits[i++] ^= (GetIntBitsFromLen(p, 0, min(j, bitLen)) << (8 - j)) & 0xFF;
+	m_pBits[i++] ^= (GetIntBitsFromLen(p, 0, std::min(j, bitLen)) << (8 - j)) & 0xFF;
 
 	for (k = bitLen - j; k > 0; k -= 8, i++, j += 8) {
-		m_pBits[i] ^= GetIntBitsFromLen(p, j, min(8, k));
+		m_pBits[i] ^= GetIntBitsFromLen(p, j, std::min(8, k));
 	}
 }
 
@@ -494,7 +499,7 @@ unsigned int CBitVector::GetInt(int bitPos, int bitLen) {
 	assert(bitPos + bitLen <= (m_nByteSize <<3));
 
 	int ret = 0, i = bitPos >> 3, j = (bitPos & 0x7), k;
-	ret = (m_pBits[i++] >> (j)) & (GetMask(min(8, bitLen)));
+	ret = (m_pBits[i++] >> (j)) & (GetMask(std::min(8, bitLen)));
 	if (bitLen == 1)
 		return ret;
 	j = 8 - j;
@@ -535,7 +540,7 @@ void CBitVector::EklundhBitTranspose(int rows, int columns) {
 	lim = (REGISTER_SIZE*) m_pBits + ceil_divide(rows * columns, 8);
 
 	int offset = (columns >> 3) / sizeof(REGISTER_SIZE);
-	int numiters = ceil_log2(min(rows, columns));
+	int numiters = ceil_log2(std::min(rows, columns));
 	int srcidx = 1, destidx;
 	int rounds;
 	int p;

@@ -8,10 +8,11 @@
 #ifndef RCV_THREAD_H_
 #define RCV_THREAD_H_
 
-#include "typedefs.h"
 #include "constants.h"
 #include "socket.h"
 #include "thread.h"
+#include <cassert>
+#include <queue>
 
 typedef struct {
 	uint8_t *buf;

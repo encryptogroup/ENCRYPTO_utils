@@ -17,8 +17,13 @@
  */
 
 #include "powmod.h"
+#include <cstdlib>
 
 #define POWMOD_DEBUG 0
+
+#if POWMOD_DEBUG
+#include <cstdio>
+#endif
 
 mpz_t* m_table_g;
 mpz_t* m_table_h;

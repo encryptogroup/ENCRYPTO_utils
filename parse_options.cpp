@@ -17,6 +17,8 @@
  */
 
 #include "parse_options.h"
+#include <cstring>
+#include <iostream>
 
 /**
  * takes a string in the Format "c i i i ..."

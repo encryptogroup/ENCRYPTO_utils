@@ -18,8 +18,10 @@
  *                  http://www.gnu.org/licenses/
  ******************************************************************************/
 
-#include <stdio.h>
+#include <cstdio>
+#include <cstdlib>
 #include "graycode.h"
+#include "utils.h"
 
 int gray_code(int number, int length) {
 	int lastbit = 0;

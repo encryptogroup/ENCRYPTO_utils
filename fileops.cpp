@@ -1,4 +1,6 @@
 #include "fileops.h"
+#include <cstdio>
+#include <unistd.h>
 
 
 BOOL FileExists(char *filename) {

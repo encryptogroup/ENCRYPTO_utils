@@ -17,16 +17,19 @@
  */
 
 #include "connection.h"
+#include "socket.h"
+#include <sstream>
+#include <iostream>
 
-BOOL Connect(string address, short port, vector<CSocket*> &sockets, int id) {
+BOOL Connect(std::string address, short port, std::vector<CSocket*> &sockets, int id) {
 	int nNumConnections;
 
 	BOOL bFail = FALSE;
 	LONG lTO = CONNECT_TIMEO_MILISEC;
-	//cout << "Connecting" << endl;
-	ostringstream os;
+	//std::cout << "Connecting" << endl;
+	std::ostringstream os;
 #ifndef BATCH
-	cout << "Connecting party "<< id <<": " << address << ", " << port << endl;
+	std::cout << "Connecting party "<< id <<": " << address << ", " << port << std::endl;
 #endif
 
 	for (int j = 0; j < sockets.size(); j++) {
@@ -39,8 +42,8 @@ BOOL Connect(string address, short port, vector<CSocket*> &sockets, int id) {
 				sockets[j]->Send(&j, sizeof(int));
 #ifndef BATCH
 				os.str("");
-				os << " (" << id << ") (" << j << ") connected" << endl;
-				cout << os.str() << flush;
+				os << " (" << id << ") (" << j << ") connected" << std::endl;
+				std::cout << os.str() << std::flush;
 #endif
 				if (j == sockets.size() - 1) {
 					return TRUE;
@@ -56,29 +59,29 @@ BOOL Connect(string address, short port, vector<CSocket*> &sockets, int id) {
 	connect_failure:
 
 	os.str("");
-	os << " (" << id << ") connection failed due to timeout!" << endl;
-	cout << os.str() << flush;
+	os << " (" << id << ") connection failed due to timeout!\n";
+	std::cout << os.str() << std::flush;
 	return FALSE;
 
 }
 
-BOOL Listen(string address, short port, vector<vector<CSocket*> > &sockets, int numConnections, int myID) {
+BOOL Listen(std::string address, short port, std::vector<std::vector<CSocket*> > &sockets, int numConnections, int myID) {
 	// everybody except the last thread listenes
-	ostringstream os;
+	std::ostringstream os;
 
 #ifndef BATCH
-	cout << "Listening: " << address << ":" << port << endl;
+	std::cout << "Listening: " << address << ":" << port << std::endl;
 #endif
 	if (!sockets[myID][0]->Socket()) {
-		cerr << "Error: a socket could not be created " << endl;
+		std::cerr << "Error: a socket could not be created \n";
 		goto listen_failure;
 	}
 	if (!sockets[myID][0]->Bind(port, address)) {
-		cerr << "Error: a socket could not be bound" << endl;
+		std::cerr << "Error: a socket could not be bound\n";
 		goto listen_failure;
 	}
 	if (!sockets[myID][0]->Listen()) {
-		cerr << "Error: could not listen on the socket " << endl;
+		std::cerr << "Error: could not listen on the socket \n";
 		goto listen_failure;
 	}
 
@@ -86,7 +89,7 @@ BOOL Listen(string address, short port, vector<vector<CSocket*> > &sockets, int 
 			{
 		CSocket sock;
 		if (!sockets[myID][0]->Accept(sock)) {
-			cerr << "Error: could not accept connection" << endl;
+			std::cerr << "Error: could not accept connection\n";
 			goto listen_failure;
 		}
 		// receive initial pid when connected
@@ -109,9 +112,9 @@ BOOL Listen(string address, short port, vector<vector<CSocket*> > &sockets, int 
 
 #ifndef BATCH
 		os.str("");
-		os << " (" << conID <<") (" << conID << ") connection accepted" << endl;
+		os << " (" << conID <<") (" << conID << ") connection accepted\n";
 
-		cout << os.str() << flush;
+		std::cout << os.str() << std::flush;
 #endif
 		// locate the socket appropriately
 		sockets[nID][conID]->AttachFrom(sock);
@@ -119,10 +122,10 @@ BOOL Listen(string address, short port, vector<vector<CSocket*> > &sockets, int 
 	}
 
 #ifndef BATCH
-	cout << "Listening finished" << endl;
+	std::cout << "Listening finished" << std::endl;
 #endif
 	return TRUE;
 
-	listen_failure: cout << "Listen failed" << endl;
+	listen_failure: std::cout << "Listen failed" << std::endl;
 	return FALSE;
 }

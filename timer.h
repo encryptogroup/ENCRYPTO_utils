@@ -22,7 +22,8 @@
 #include <sys/time.h>
 #include <string>
 #include <iostream>
-#include <stdlib.h>
+#include <cstdlib>
+#include <vector>
 #include "socket.h"
 
 #include "typedefs.h"

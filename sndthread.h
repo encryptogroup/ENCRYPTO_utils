@@ -8,10 +8,11 @@
 #ifndef SND_THREAD_H_
 #define SND_THREAD_H_
 
-#include "typedefs.h"
 #include "constants.h"
 #include "socket.h"
 #include "thread.h"
+#include <cassert>
+#include <queue>
 
 struct snd_task {
 	uint8_t channelid;

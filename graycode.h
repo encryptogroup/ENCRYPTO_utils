@@ -12,8 +12,6 @@
 #ifndef GRAYCODE_H_
 #define GRAYCODE_H_
 
-#include "typedefs.h"
-#include "utils.h"
 
 /******************************************************************************
  *

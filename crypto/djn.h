@@ -23,12 +23,6 @@
 #ifndef _DJN_H_
 #define _DJN_H_
 #include <gmp.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include "../powmod.h"
-#include "../timer.h"
-#include "../utils.h"
 
 /*
  On memory handling:

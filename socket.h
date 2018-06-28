@@ -19,7 +19,38 @@
 #ifndef __SOCKET_H__BY_SGCHOI
 #define __SOCKET_H__BY_SGCHOI
 
+
 #include "typedefs.h"
+#include <cstdint>
+#include <cstring>
+#include <iostream>
+
+// moved here from typedefs.h
+#ifdef WIN32
+#include <WinSock2.h>
+#include <windows.h>
+
+typedef unsigned short USHORT;
+typedef int socklen_t;
+#pragma comment(lib, "wsock32.lib")
+
+#define SleepMiliSec(x)	Sleep(x)
+
+#else //WIN32
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <netinet/tcp.h>
+
+typedef int SOCKET;
+#define INVALID_SOCKET -1
+
+#define SleepMiliSec(x)			usleep((x)<<10)
+#endif //WIN32
+
 
 class CSocket {
 public:

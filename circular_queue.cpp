@@ -17,6 +17,7 @@
  */
 
 #include "circular_queue.h"
+#include <cstdlib>
 
 CQueue::CQueue(int maxsize) {
 	head = 0;
@@ -24,6 +25,11 @@ CQueue::CQueue(int maxsize) {
 
 	queuesize = maxsize;
 	queue = (int*) malloc(sizeof(int) * queuesize);
+}
+
+CQueue::~CQueue() {
+	if (queue)
+		free(queue);
 }
 
 void CQueue::enq(int ele) {

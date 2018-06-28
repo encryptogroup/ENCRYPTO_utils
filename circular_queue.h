@@ -19,7 +19,7 @@
 #ifndef __CQUEUE__
 #define __CQUEUE__
 
-#include "typedefs.h"
+
 class CQueue {
 private:
 	int queuesize;
@@ -28,11 +28,7 @@ private:
 	int* queue;
 public:
 	CQueue(int maxsize);
-	~CQueue() {
-		if (queue)
-			free(queue);
-	}
-	;
+	~CQueue();
 	void enq(int ele);
 	int deq();
 	int size();
