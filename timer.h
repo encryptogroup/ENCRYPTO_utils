@@ -26,6 +26,7 @@
 #include <vector>
 #include "socket.h"
 
+#include "constants.h"
 #include "typedefs.h"
 
 //Note do not change P_FIRST and P_LAST and keep them pointing to the first and last element in the enum

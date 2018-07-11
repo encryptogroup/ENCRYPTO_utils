@@ -17,6 +17,7 @@
  */
 
 #include "connection.h"
+#include "constants.h"
 #include "socket.h"
 #include <sstream>
 #include <iostream>
