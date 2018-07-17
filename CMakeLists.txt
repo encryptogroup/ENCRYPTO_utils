@@ -21,6 +21,7 @@ find_package(OpenSSL REQUIRED)
 add_library(encrypto_utils
     src/${PROJECT_NAME}/cbitvector.cpp
     src/${PROJECT_NAME}/circular_queue.cpp
+    src/${PROJECT_NAME}/codewords.cpp
     src/${PROJECT_NAME}/connection.cpp
     src/${PROJECT_NAME}/crypto/crypto.cpp
     src/${PROJECT_NAME}/crypto/dgk.cpp
