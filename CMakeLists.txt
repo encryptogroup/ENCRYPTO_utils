@@ -31,7 +31,6 @@ add_library(encrypto_utils
     src/${PROJECT_NAME}/crypto/gmp-pk-crypto.cpp
     src/${PROJECT_NAME}/crypto/intrin_sequential_enc8.cpp
     src/${PROJECT_NAME}/crypto/TedKrovetzAesNiWrapperC.cpp
-    src/${PROJECT_NAME}/fileops.cpp
     src/${PROJECT_NAME}/graycode.cpp
     src/${PROJECT_NAME}/parse_options.cpp
     src/${PROJECT_NAME}/powmod.cpp
