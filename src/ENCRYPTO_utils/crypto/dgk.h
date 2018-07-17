@@ -30,20 +30,20 @@
 /*
  This represents a DGK public key.
  */
-typedef struct {
+struct dgk_pubkey_t {
 	unsigned int bits; /* key bits e.g., 1024 */
 	unsigned int lbits; /* share (message) length e.g., 32 */
 	mpz_t n; /* public modulus n = pq */
 	mpz_t u; /* u = 2^lbits (uses 2^(2lbits+2) internally) */
 	mpz_t g; /* generator g */
 	mpz_t h; /* generator h */
-} dgk_pubkey_t;
+};
 
 /*
  This represents a DGK private key; it needs to be used with a
  dgk_pubkey_t to be meaningful.
  */
-typedef struct {
+struct dgk_prvkey_t {
 	mpz_t vp;
 	mpz_t vq;
 	mpz_t p;
@@ -52,7 +52,7 @@ typedef struct {
 	mpz_t q_minusone;
 	mpz_t pinv;
 	mpz_t qinv;
-} dgk_prvkey_t;
+};
 
 extern mpz_t* powtwo;
 extern mpz_t* gvpvqp;

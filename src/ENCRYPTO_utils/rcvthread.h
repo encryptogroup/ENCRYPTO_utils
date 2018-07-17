@@ -14,10 +14,10 @@
 #include <cassert>
 #include <queue>
 
-typedef struct {
+struct rcv_ctx {
 	uint8_t *buf;
 	uint64_t rcvbytes;
-} rcv_ctx;
+};
 
 //A receive task listens to a particular id and writes incoming data on that id into rcv_buf and triggers event
 struct rcv_task {

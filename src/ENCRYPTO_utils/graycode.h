@@ -57,7 +57,7 @@
  * \endverbatim
  */
 
-typedef struct {
+struct code {
 	/**
 	 * array of of Gray code entries
 	 */
@@ -66,7 +66,7 @@ typedef struct {
 	 * increment
 	 */
 	int *inc;
-} code;
+};
 
 /**
  * Returns the i-th gray code entry for a gray code of length \f$2^l\f$.

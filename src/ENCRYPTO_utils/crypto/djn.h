@@ -43,14 +43,14 @@
 /*
  This represents a public key, which is the modulus n plus a generator h.
  */
-typedef struct {
+struct djn_pubkey_t {
 	int bits; /* e.g., 1024 */
 	int rbits; /* e.g., 512 */
 	mpz_t n; /* public modulus n = p q */
 	mpz_t n_squared; /* cached to avoid recomputing */
 	mpz_t h; /* generator h = -x^2 mod n */
 	mpz_t h_s; /* h_s = h^n mod n^2 */
-} djn_pubkey_t;
+};
 
 /*
  This represents a Paillier private key; it needs to be used with a
@@ -58,7 +58,7 @@ typedef struct {
  function (lambda) of the modulus. The other value is kept for
  efficiency and should be considered private.
  */
-typedef struct {
+struct djn_prvkey_t {
 	mpz_t lambda; /* lambda(n), i.e., lcm(p-1,q-1) */
 	mpz_t lambda_inverse; /* inverse of lambda (mod n)*/
 	mpz_t p; /* cached to avoid recomputing */
@@ -71,7 +71,7 @@ typedef struct {
 	mpz_t q_squared; /* cached to avoid recomputing */
 	mpz_t ordpsq; /* p^2-p */
 	mpz_t ordqsq; /* q^2-q */
-} djn_prvkey_t;
+};
 
 /*
  This is the type of the callback functions used to obtain the
