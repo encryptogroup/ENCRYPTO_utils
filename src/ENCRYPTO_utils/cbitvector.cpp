@@ -22,24 +22,127 @@
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
+#include <cstring>
+
+/** Array which stores the bytes which are reversed. For example, the hexadecimal 0x01 is when reversed becomes 0x80.  */
+static const BYTE REVERSE_BYTE_ORDER[256] = { 0x00, 0x80, 0x40, 0xC0, 0x20, 0xA0, 0x60, 0xE0, 0x10, 0x90, 0x50, 0xD0, 0x30, 0xB0, 0x70, 0xF0, 0x08, 0x88, 0x48, 0xC8, 0x28, 0xA8,
+		0x68, 0xE8, 0x18, 0x98, 0x58, 0xD8, 0x38, 0xB8, 0x78, 0xF8, 0x04, 0x84, 0x44, 0xC4, 0x24, 0xA4, 0x64, 0xE4, 0x14, 0x94, 0x54, 0xD4, 0x34, 0xB4, 0x74, 0xF4, 0x0C, 0x8C,
+		0x4C, 0xCC, 0x2C, 0xAC, 0x6C, 0xEC, 0x1C, 0x9C, 0x5C, 0xDC, 0x3C, 0xBC, 0x7C, 0xFC, 0x02, 0x82, 0x42, 0xC2, 0x22, 0xA2, 0x62, 0xE2, 0x12, 0x92, 0x52, 0xD2, 0x32, 0xB2,
+		0x72, 0xF2, 0x0A, 0x8A, 0x4A, 0xCA, 0x2A, 0xAA, 0x6A, 0xEA, 0x1A, 0x9A, 0x5A, 0xDA, 0x3A, 0xBA, 0x7A, 0xFA, 0x06, 0x86, 0x46, 0xC6, 0x26, 0xA6, 0x66, 0xE6, 0x16, 0x96,
+		0x56, 0xD6, 0x36, 0xB6, 0x76, 0xF6, 0x0E, 0x8E, 0x4E, 0xCE, 0x2E, 0xAE, 0x6E, 0xEE, 0x1E, 0x9E, 0x5E, 0xDE, 0x3E, 0xBE, 0x7E, 0xFE, 0x01, 0x81, 0x41, 0xC1, 0x21, 0xA1,
+		0x61, 0xE1, 0x11, 0x91, 0x51, 0xD1, 0x31, 0xB1, 0x71, 0xF1, 0x09, 0x89, 0x49, 0xC9, 0x29, 0xA9, 0x69, 0xE9, 0x19, 0x99, 0x59, 0xD9, 0x39, 0xB9, 0x79, 0xF9, 0x05, 0x85,
+		0x45, 0xC5, 0x25, 0xA5, 0x65, 0xE5, 0x15, 0x95, 0x55, 0xD5, 0x35, 0xB5, 0x75, 0xF5, 0x0D, 0x8D, 0x4D, 0xCD, 0x2D, 0xAD, 0x6D, 0xED, 0x1D, 0x9D, 0x5D, 0xDD, 0x3D, 0xBD,
+		0x7D, 0xFD, 0x03, 0x83, 0x43, 0xC3, 0x23, 0xA3, 0x63, 0xE3, 0x13, 0x93, 0x53, 0xD3, 0x33, 0xB3, 0x73, 0xF3, 0x0B, 0x8B, 0x4B, 0xCB, 0x2B, 0xAB, 0x6B, 0xEB, 0x1B, 0x9B,
+		0x5B, 0xDB, 0x3B, 0xBB, 0x7B, 0xFB, 0x07, 0x87, 0x47, 0xC7, 0x27, 0xA7, 0x67, 0xE7, 0x17, 0x97, 0x57, 0xD7, 0x37, 0xB7, 0x77, 0xF7, 0x0F, 0x8F, 0x4F, 0xCF, 0x2F, 0xAF,
+		0x6F, 0xEF, 0x1F, 0x9F, 0x5F, 0xDF, 0x3F, 0xBF, 0x7F, 0xFF };
+
+/**
+	This array is used by \link XORBits(BYTE* p, int pos, int len) \endlink and \link SetBits(BYTE* p, uint64_t pos, uint64_t len) \endlink
+    method for lower bit mask.
+*/
+static const BYTE RESET_BIT_POSITIONS[9] = { 0x00, 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF };
+/**
+	This array is used by \link XORBits(BYTE* p, int pos, int len) \endlink and \link SetBits(BYTE* p, uint64_t pos, uint64_t len) \endlink
+    method for upper bit mask.
+*/
+static const BYTE RESET_BIT_POSITIONS_INV[9] = { 0x00, 0x80, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE, 0xFF };
+
+/** This array is used by \link GetBits(BYTE* p, int pos, int len) \endlink method for lower bit mask. */
+static const BYTE GET_BIT_POSITIONS[9] = { 0xFF, 0xFE, 0xFC, 0xF8, 0xF0, 0xE0, 0xC0, 0x80, 0x00 };
+
+/** This array is used by \link GetBits(BYTE* p, int pos, int len) \endlink method for upper bit mask. */
+static const BYTE GET_BIT_POSITIONS_INV[9] = { 0xFF, 0x7F, 0x3F, 0x1F, 0x0F, 0x07, 0x03, 0x01, 0x00 };
+
+/**
+	This array is used for masking bits and extracting a particular positional bit from the provided byte array.
+	This array is used by \link GetBit(int idx) \endlink method.
+*/
+static const BYTE MASK_BIT[8] = { 0x80, 0x40, 0x20, 0x10, 0x8, 0x4, 0x2, 0x1 };
+
+/**
+	This array is used for extracting a particular positional bit from the provided byte array without masking.
+	This array is used by \link GetBitNoMask(int idx) \endlink method.
+*/
+static const BYTE BIT[8] = { 0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80 };
+
+/**
+	This array is used for masking bits and setting a particular positional bit from the provided byte array in the CBitVector.
+	This array is used by \link SetBit(int idx, BYTE b) \endlink and \link ANDBit(int idx, BYTE b) \endlink methods.
+*/
+static const BYTE CMASK_BIT[8] = { 0x7f, 0xbf, 0xdf, 0xef, 0xf7, 0xfb, 0xfd, 0xfe };
+
+/**
+	This array is used for setting a particular positional bit from the provided byte array without masking in the CBitVector.
+	This array is used by \link SetBitNoMask(int idx, BYTE b) \endlink and \link ANDBitNoMask(int idx, BYTE b) \endlink methods.
+*/
+static const BYTE C_BIT[8] = { 0xFE, 0xFD, 0xFB, 0xF7, 0xEF, 0xDF, 0xBF, 0x7F };
+
+/**
+	This array is used for masking bits and setting a particular positional bit from the provided byte array in the CBitVector.
+	This array is used by \link SetBit(int idx, BYTE b) \endlink and \link XORBit(int idx, BYTE b) \endlink methods.
+*/
+static const BYTE MASK_SET_BIT_C[2][8] = { { 0x80, 0x40, 0x20, 0x10, 0x8, 0x4, 0x2, 0x1 }, { 0, 0, 0, 0, 0, 0, 0, 0 } };
+
+/**
+	This array is used for setting a particular positional bit from the provided byte array without masking in the CBitVector.
+	This array is used by \link SetBitNoMask(int idx, BYTE b) \endlink and \link XORBitNoMask(int idx, BYTE b) \endlink methods.
+*/
+static const BYTE SET_BIT_C[2][8] = { { 0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80 }, { 0, 0, 0, 0, 0, 0, 0, 0 } };
+
+const BYTE SELECT_BIT_POSITIONS[9] = { 0x00, 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF };
+
+#ifdef MACHINE_SIZE_32
+static const REGISTER_SIZE TRANSPOSITION_MASKS[6] =
+{	0x55555555, 0x33333333, 0x0F0F0F0F, 0x00FF00FF, 0x0000FFFF};
+static const REGISTER_SIZE TRANSPOSITION_MASKS_INV[6] =
+{	0xAAAAAAAA, 0xCCCCCCCC, 0xF0F0F0F0, 0xFF00FF00, 0xFFFF0000};
+#else
+#ifdef MACHINE_SIZE_64
+/** Transposition mask used for Eklund Bit Matrix Transposition.*/
+static const REGISTER_SIZE TRANSPOSITION_MASKS[6] = { 0x5555555555555555, 0x3333333333333333, 0x0F0F0F0F0F0F0F0F, 0x00FF00FF00FF00FF, 0x0000FFFF0000FFFF, 0x00000000FFFFFFFF };
+static const REGISTER_SIZE TRANSPOSITION_MASKS_INV[6] = { 0xAAAAAAAAAAAAAAAA, 0xCCCCCCCCCCCCCCCC, 0xF0F0F0F0F0F0F0F0, 0xFF00FF00FF00FF00, 0xFFFF0000FFFF0000, 0xFFFFFFFF00000000 };
+#else
+#endif
+#endif
+
+static const size_t SHIFTVAL = 3;
+
+CBitVector::CBitVector() {
+	Init();
+}
+
+CBitVector::CBitVector(uint32_t bits) {
+	Init();
+	Create(bits);
+}
+
+CBitVector::CBitVector(uint32_t bits, crypto* crypt) {
+	Init();
+	Create(bits, crypt);
+}
+
+void CBitVector::Init() {
+	m_pBits = NULL;
+	m_nByteSize = 0;
+}
+
+CBitVector::~CBitVector(){
+	delCBitVector();
+};
+
+void CBitVector::delCBitVector() {
+	if (( m_nByteSize > 0 )&& (m_pBits != NULL)) {
+		free(m_pBits);
+	}
+	m_nByteSize = 0;
+	m_pBits = NULL;
+}
 
 /* Fill random values using the pre-defined AES key */
 void CBitVector::FillRand(uint32_t bits, crypto* crypt) {
 	if (bits > m_nByteSize << 3)
 		Create(bits);
 	crypt->gen_rnd(m_pBits, ceil_divide(bits, 8));
-}
-
-void CBitVector::Create(uint64_t numelements, uint64_t elementlength, crypto* crypt) {
-	Create(numelements * elementlength, crypt);
-	m_nElementLength = elementlength;
-	m_nNumElements = numelements;
-	m_nNumElementsDimB = 1;
-}
-
-void CBitVector::Create(uint64_t bits, crypto* crypt) {
-	Create(bits);
-	FillRand(bits, crypt);
 }
 
 void CBitVector::Create(uint64_t bits) {
@@ -61,8 +164,33 @@ void CBitVector::Create(uint64_t bits) {
 	m_nNumElementsDimB = 1;
 }
 
+void CBitVector::CreateBytes(uint64_t bytes) {
+	Create(bytes << 3);
+}
+
+void CBitVector::CreateBytes(uint64_t bytes, crypto* crypt) {
+	Create(bytes << 3, crypt);
+}
+
+void CBitVector::CreateZeros(uint64_t bits) {
+	Create(bits);
+	memset(m_pBits, 0, m_nByteSize);
+}
+
+void CBitVector::Create(uint64_t bits, crypto* crypt) {
+	Create(bits);
+	FillRand(bits, crypt);
+}
+
 void CBitVector::Create(uint64_t numelements, uint64_t elementlength) {
 	Create(((uint64_t) numelements) * elementlength);
+	m_nElementLength = elementlength;
+	m_nNumElements = numelements;
+	m_nNumElementsDimB = 1;
+}
+
+void CBitVector::Create(uint64_t numelements, uint64_t elementlength, crypto* crypt) {
+	Create(numelements * elementlength, crypt);
 	m_nElementLength = elementlength;
 	m_nNumElements = numelements;
 	m_nNumElementsDimB = 1;
@@ -93,6 +221,73 @@ void CBitVector::ResizeinBytes(uint64_t newSizeBytes) {
 	free(tBits);
 }
 
+void CBitVector::Reset() {
+	memset(m_pBits, 0, m_nByteSize);
+}
+
+void CBitVector::ResetFromTo(int frombyte, int tobyte) {
+	assert(frombyte <= tobyte);
+	assert(tobyte < m_nByteSize);
+	memset(m_pBits + frombyte, 0, tobyte - frombyte);
+}
+
+void CBitVector::SetToOne() {
+	memset(m_pBits, 0xFF, m_nByteSize);
+}
+
+void CBitVector::Invert() {
+	for(uint64_t i = 0; i < m_nByteSize; i++) {
+		m_pBits[i] = ~m_pBits[i];
+	}
+}
+
+int CBitVector::GetSize() {
+	return m_nByteSize;
+}
+
+BOOL CBitVector::IsEqual(CBitVector& vec) {
+	if (vec.GetSize() != m_nByteSize) {
+		return false;
+	}
+
+	BYTE* ptr = vec.GetArr();
+	for (int i = 0; i < m_nByteSize; i++) {
+		if (ptr[i] != m_pBits[i]) {
+			return false;
+		}
+	}
+	return true;
+}
+
+BOOL CBitVector::IsEqual(CBitVector& vec, int from, int to) {
+	if (vec.GetSize() * 8 < to || m_nByteSize * 8 < to || from > to) {
+		return false;
+	}
+
+	for (int i = from; i < to; i++) {
+		if (vec.GetBit(i) != GetBit(i)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+void CBitVector::SetElementLength(int elelen) {
+	m_nElementLength = elelen;
+}
+
+uint64_t CBitVector::GetElementLength() {
+	return m_nElementLength;
+}
+
+void CBitVector::Copy(CBitVector& vec) {
+	Copy(vec.GetArr(), 0, vec.GetSize());
+}
+
+void CBitVector::Copy(CBitVector& vec, int pos, int len) {
+	Copy(vec.GetArr(), pos, len);
+}
+
 void CBitVector::Copy(BYTE* p, int pos, int len) {
 	if (pos + len > m_nByteSize) {
 		if (m_pBits)
@@ -104,6 +299,110 @@ void CBitVector::Copy(BYTE* p, int pos, int len) {
 	memcpy(m_pBits + pos, p, len);
 }
 
+void CBitVector::ORByte(int pos, BYTE p) {
+	assert(pos <= m_nByteSize); 
+	m_pBits[pos] |= p;
+}
+
+BYTE CBitVector::GetBit(int idx) {
+	assert(idx < (m_nByteSize << 3));
+	return !!(m_pBits[idx >> 3] & MASK_BIT[idx & 0x7]);
+}
+
+void CBitVector::SetBit(int idx, BYTE b) {
+	assert(idx < (m_nByteSize << 3));
+	m_pBits[idx >> 3] = (m_pBits[idx >> 3] & CMASK_BIT[idx & 0x7]) | MASK_SET_BIT_C[!(b & 0x01)][idx & 0x7];
+}
+
+BYTE CBitVector::GetBitNoMask(uint64_t idx) {
+	assert(idx < (m_nByteSize << 3));
+	return !!(m_pBits[idx >> 3] & BIT[idx & 0x7]);
+}
+
+void CBitVector::SetBitNoMask(int idx, BYTE b) {
+	assert(idx < (m_nByteSize << 3));
+	m_pBits[idx >> 3] = (m_pBits[idx >> 3] & C_BIT[idx & 0x7]) | SET_BIT_C[!(b & 0x01)][idx & 0x7];
+}
+
+void CBitVector::XORBitNoMask(int idx, BYTE b) {
+	assert(idx < (m_nByteSize << 3));
+	m_pBits[idx >> 3] ^= SET_BIT_C[!(b & 0x01)][idx & 0x7];
+}
+
+void CBitVector::SetByte(int idx, BYTE p) {
+	assert(idx < m_nByteSize);
+	m_pBits[idx] = p;
+}
+
+BYTE CBitVector::GetByte(int idx) {
+	assert(idx < m_nByteSize);
+	return m_pBits[idx];
+}
+
+void CBitVector::XORByte(int idx, BYTE b) {
+	assert(idx < m_nByteSize);
+	m_pBits[idx] ^= b;
+}
+
+void CBitVector::ANDByte(int idx, BYTE b) {
+	assert(idx < m_nByteSize);
+	m_pBits[idx] &= b;
+}
+
+void CBitVector::GetBits(BYTE* p, int pos, int len) {
+	if (len < 1 || (pos + len) > (m_nByteSize << 3)) {
+		return;
+	}
+	if (len == 1) {
+		*p = GetBitNoMask(pos);
+		return;
+	}
+
+	if (!((pos & 0x07) || (len & 0x07))) {
+		GetBytes(p, pos >> 3, len >> 3);
+		return;
+	}
+
+	int posctr = pos >> 3;
+	int lowermask = pos & 7;
+	int uppermask = 8 - lowermask;
+
+	int i;
+	BYTE temp;
+	for (i = 0; i < len / (sizeof(BYTE) * 8); i++, posctr++) {
+		p[i] = ((m_pBits[posctr] & GET_BIT_POSITIONS[lowermask]) >> lowermask) & 0xFF;
+		p[i] |= (m_pBits[posctr + 1] & GET_BIT_POSITIONS_INV[uppermask]) << uppermask;
+	}
+	int remlen = len & 0x07;
+	if (remlen) {
+		if (remlen <= uppermask) {
+			p[i] = ((m_pBits[posctr] & ((((1 << remlen) - 1) << lowermask))) >> lowermask) & 0xFF;
+		} else {
+			p[i] = ((m_pBits[posctr] & GET_BIT_POSITIONS[lowermask]) >> lowermask) & 0xFF;
+			p[i] |= (m_pBits[posctr + 1] & (((1 << (remlen - uppermask)) - 1))) << uppermask;
+		}
+	}
+}
+
+
+template<class T> void GetBytes(T* dst, T* src, T* lim) {
+	while (dst != lim) {
+		*dst++ = *src++;
+	}
+}
+
+//optimized bytewise for set operation
+void CBitVector::GetBytes(BYTE* p, int pos, int len) {
+	assert(pos+len <= m_nByteSize); 
+	BYTE* src = m_pBits + pos;
+	BYTE* dst = p;
+	//Do many operations on REGSIZE types first and then (if necessary) use bytewise operations
+	::GetBytes((REGSIZE*) dst, (REGSIZE*) src, ((REGSIZE*) dst) + (len >> SHIFTVAL));
+	dst += ((len >> SHIFTVAL) << SHIFTVAL);
+	src += ((len >> SHIFTVAL) << SHIFTVAL);
+	::GetBytes(dst, src, dst + (len & ((1 << SHIFTVAL) - 1)));
+}
+//
 //pos and len in bits
 void CBitVector::SetBits(BYTE* p, uint64_t pos, uint64_t len) {
 	if (len < 1 || (pos + len) > (m_nByteSize << 3)){
@@ -142,12 +441,40 @@ void CBitVector::SetBits(BYTE* p, uint64_t pos, uint64_t len) {
 	}
 }
 
+void CBitVector::SetBits(BYTE* p, int pos, int len) {
+	SetBits(p, (uint64_t) pos, (uint64_t) len);
+}
+
 
 //Set bits given an offset on the bits for p which is not necessarily divisible by 8
 void CBitVector::SetBitsPosOffset(BYTE* p, uint64_t ppos, uint64_t pos, uint64_t len) {
 	for (uint64_t i = pos, j = ppos; j < ppos + len; i++, j++) {
 		m_pBits[i / 8] ^= (((p[j / 8] & (1 << (j % 8))) >> j % 8) << i % 8);
 	}
+}
+
+template<class T> void SetBytes(T* dst, const T* src, const T* lim) {
+	while (dst < lim) {
+		*dst++ = *src++;
+	}
+}
+
+//optimized bytewise for set operation
+void CBitVector::SetBytes(const BYTE *src, const uint64_t pos, const uint64_t len) {
+	assert(pos + len <= m_nByteSize);
+
+	BYTE *dst = m_pBits + pos;
+
+	//Do many operations on REGSIZE types first and then (if necessary) use bytewise operations
+	::SetBytes((REGSIZE*) dst, (REGSIZE*) src, ((REGSIZE*) dst) + (len >> SHIFTVAL));
+	dst += ((len >> SHIFTVAL) << SHIFTVAL);
+	src += ((len >> SHIFTVAL) << SHIFTVAL);
+	::SetBytes(dst, src, dst + (len & ((1 << SHIFTVAL) - 1)));
+}
+
+void CBitVector::SetBytesToZero(int bytepos, int bytelen) {
+	assert(bytepos + bytelen <= m_nByteSize);
+	memset(m_pBits + bytepos, 0x00, bytelen);
 }
 
 
@@ -165,69 +492,34 @@ void CBitVector::SetBitsToZero(int bitpos, int bitlen) {
 	}
 }
 
-void CBitVector::SetBytesToZero(int bytepos, int bytelen) {
-	assert(bytepos + bytelen <= m_nByteSize);
-	memset(m_pBits + bytepos, 0x00, bytelen);
-}
-
-void CBitVector::Invert() {
-	for(uint64_t i = 0; i < m_nByteSize; i++) {
-		m_pBits[i] = ~m_pBits[i];
-	}
-}
-
-
-void CBitVector::GetBits(BYTE* p, int pos, int len) {
-	if (len < 1 || (pos + len) > (m_nByteSize << 3)) {
-		return;
-	}
-	if (len == 1) {
-		*p = GetBitNoMask(pos);
-		return;
-	}
-
-	if (!((pos & 0x07) || (len & 0x07))) {
-		GetBytes(p, pos >> 3, len >> 3);
-		return;
-	}
-
-	int posctr = pos >> 3;
-	int lowermask = pos & 7;
-	int uppermask = 8 - lowermask;
-
-	int i;
-	BYTE temp;
-	for (i = 0; i < len / (sizeof(BYTE) * 8); i++, posctr++) {
-		p[i] = ((m_pBits[posctr] & GET_BIT_POSITIONS[lowermask]) >> lowermask) & 0xFF;
-		p[i] |= (m_pBits[posctr + 1] & GET_BIT_POSITIONS_INV[uppermask]) << uppermask;
-	}
-	int remlen = len & 0x07;
-	if (remlen) {
-		if (remlen <= uppermask) {
-			p[i] = ((m_pBits[posctr] & ((((1 << remlen) - 1) << lowermask))) >> lowermask) & 0xFF;
-		} else {
-			p[i] = ((m_pBits[posctr] & GET_BIT_POSITIONS[lowermask]) >> lowermask) & 0xFF;
-			p[i] |= (m_pBits[posctr + 1] & (((1 << (remlen - uppermask)) - 1))) << uppermask;
-		}
-	}
-}
-
-void CBitVector::XORBytesReverse(BYTE* p, int pos, int len) {
-	assert((pos + len) <= m_nByteSize); 
-	BYTE* src = p;
-	BYTE* dst = m_pBits + pos;
-	BYTE* lim = dst + len;
+//Generic bytewise XOR operation
+template<class T> void XORBytes(T* dst, T* src, T* lim) {
 	while (dst != lim) {
-		*dst++ ^= REVERSE_BYTE_ORDER[*src++];
+		*dst++ ^= *src++;
 	}
 }
 
-//XOR bits given an offset on the bits for p which is not necessarily divisible by 8
-void CBitVector::XORBitsPosOffset(BYTE* p, int ppos, int pos, int len) {
-	assert((pos + len) <= (m_nByteSize<<3)); 
-	for (int i = pos, j = ppos; j < ppos + len; i++, j++) {
-		m_pBits[i / 8] ^= (((p[j / 8] & (1 << (j % 8))) >> j % 8) << i % 8);
-	}
+//optimized bytewise XOR operation
+void CBitVector::XORBytes(BYTE* p, int pos, int len) {
+	if(pos + len > m_nByteSize)
+	std::cout << "pos = " << pos << ", len = " << len << ", bytesize = " << m_nByteSize << std::endl;
+	assert(pos + len <= m_nByteSize);
+
+	BYTE* dst = m_pBits + pos;
+	BYTE* src = p;
+	//Do many operations on REGSIZE types first and then (if necessary) use bytewise operations
+	::XORBytes((REGSIZE*) dst, (REGSIZE*) src, ((REGSIZE*) dst) + (len >> SHIFTVAL));
+	dst += ((len >> SHIFTVAL) << SHIFTVAL);
+	src += ((len >> SHIFTVAL) << SHIFTVAL);
+	::XORBytes(dst, src, dst + (len & ((1 << SHIFTVAL) - 1)));
+}
+
+void CBitVector::XORBytes(BYTE* p, int len) {
+	XORBytes(p, 0, len);
+}
+
+void CBitVector::XORVector(CBitVector &vec, int pos, int len) {
+	XORBytes(vec.GetArr(), pos, len);
 }
 
 void CBitVector::XORBits(BYTE* p, int pos, int len) {
@@ -265,42 +557,12 @@ void CBitVector::XORBits(BYTE* p, int pos, int len) {
 	}
 }
 
-void CBitVector::ORByte(int pos, BYTE p) {
-	assert(pos <= m_nByteSize); 
-	m_pBits[pos] |= p;
-}
-
-//optimized bytewise for set operation
-void CBitVector::GetBytes(BYTE* p, int pos, int len) {
-	assert(pos+len <= m_nByteSize); 
-	BYTE* src = m_pBits + pos;
-	BYTE* dst = p;
-	//Do many operations on REGSIZE types first and then (if necessary) use bytewise operations
-	GetBytes((REGSIZE*) dst, (REGSIZE*) src, ((REGSIZE*) dst) + (len >> SHIFTVAL));
-	dst += ((len >> SHIFTVAL) << SHIFTVAL);
-	src += ((len >> SHIFTVAL) << SHIFTVAL);
-	GetBytes(dst, src, dst + (len & ((1 << SHIFTVAL) - 1)));
-}
-
-template<class T> void CBitVector::GetBytes(T* dst, T* src, T* lim) {
-	while (dst != lim) {
-		*dst++ = *src++;
+//XOR bits given an offset on the bits for p which is not necessarily divisible by 8
+void CBitVector::XORBitsPosOffset(BYTE* p, int ppos, int pos, int len) {
+	assert((pos + len) <= (m_nByteSize<<3)); 
+	for (int i = pos, j = ppos; j < ppos + len; i++, j++) {
+		m_pBits[i / 8] ^= (((p[j / 8] & (1 << (j % 8))) >> j % 8) << i % 8);
 	}
-}
-
-//optimized bytewise XOR operation
-void CBitVector::XORBytes(BYTE* p, int pos, int len) {
-	if(pos + len > m_nByteSize)
-	std::cout << "pos = " << pos << ", len = " << len << ", bytesize = " << m_nByteSize << std::endl;
-	assert(pos + len <= m_nByteSize);
-
-	BYTE* dst = m_pBits + pos;
-	BYTE* src = p;
-	//Do many operations on REGSIZE types first and then (if necessary) use bytewise operations
-	XORBytes((REGSIZE*) dst, (REGSIZE*) src, ((REGSIZE*) dst) + (len >> SHIFTVAL));
-	dst += ((len >> SHIFTVAL) << SHIFTVAL);
-	src += ((len >> SHIFTVAL) << SHIFTVAL);
-	XORBytes(dst, src, dst + (len & ((1 << SHIFTVAL) - 1)));
 }
 
 //Method for directly XORing CBitVectors
@@ -309,30 +571,20 @@ void CBitVector::XOR(CBitVector* b) {
 	XORBytes(b->GetArr(), 0, m_nByteSize);
 }
 
-//Generic bytewise XOR operation
-template<class T> void CBitVector::XORBytes(T* dst, T* src, T* lim) {
+void CBitVector::XORBytesReverse(BYTE* p, int pos, int len) {
+	assert((pos + len) <= m_nByteSize); 
+	BYTE* src = p;
+	BYTE* dst = m_pBits + pos;
+	BYTE* lim = dst + len;
 	while (dst != lim) {
-		*dst++ ^= *src++;
+		*dst++ ^= REVERSE_BYTE_ORDER[*src++];
 	}
 }
 
 
-//optimized bytewise for set operation
-void CBitVector::SetBytes(const BYTE *src, const uint64_t pos, const uint64_t len) {
-	assert(pos + len <= m_nByteSize);
-
-	BYTE *dst = m_pBits + pos;
-
-	//Do many operations on REGSIZE types first and then (if necessary) use bytewise operations
-	SetBytes((REGSIZE*) dst, (REGSIZE*) src, ((REGSIZE*) dst) + (len >> SHIFTVAL));
-	dst += ((len >> SHIFTVAL) << SHIFTVAL);
-	src += ((len >> SHIFTVAL) << SHIFTVAL);
-	SetBytes(dst, src, dst + (len & ((1 << SHIFTVAL) - 1)));
-}
-
-template<class T> void CBitVector::SetBytes(T* dst, const T* src, const T* lim) {
-	while (dst < lim) {
-		*dst++ = *src++;
+template<class T> void ANDBytes(T* dst, T* src, T* lim) {
+	while (dst != lim) {
+		*dst++ &= *src++;
 	}
 }
 
@@ -342,15 +594,10 @@ void CBitVector::ANDBytes(BYTE* p, int pos, int len) {
 	BYTE* dst = m_pBits + pos;
 	BYTE* src = p;
 	//Do many operations on REGSIZE types first and then (if necessary) use bytewise operations
-	ANDBytes((REGSIZE*) dst, (REGSIZE*) src, ((REGSIZE*) dst) + (len >> SHIFTVAL));
+	::ANDBytes((REGSIZE*) dst, (REGSIZE*) src, ((REGSIZE*) dst) + (len >> SHIFTVAL));
 	dst += ((len >> SHIFTVAL) << SHIFTVAL);
 	src += ((len >> SHIFTVAL) << SHIFTVAL);
-	ANDBytes(dst, src, dst + (len & ((1 << SHIFTVAL) - 1)));
-}
-template<class T> void CBitVector::ANDBytes(T* dst, T* src, T* lim) {
-	while (dst != lim) {
-		*dst++ &= *src++;
-	}
+	::ANDBytes(dst, src, dst + (len & ((1 << SHIFTVAL) - 1)));
 }
 
 void CBitVector::SetXOR(BYTE* p, BYTE* q, int pos, int len) {
@@ -379,6 +626,23 @@ void CBitVector::CLShift(uint64_t pos) {
 	m_pBits = tmpbuf;
 }
 
+BYTE* CBitVector::GetArr() {
+	return m_pBits;
+}
+
+void CBitVector::AttachBuf(BYTE* p, uint64_t size) {
+	m_pBits = p;
+	m_nByteSize = size;
+}
+
+
+/**
+	This method is used to detach the buffer from the CBitVector. */
+void CBitVector::DetachBuf() {
+	m_pBits = NULL;
+	m_nByteSize = 0;
+}
+
 
 void CBitVector::Print(int fromBit, int toBit) {
 	int to = toBit > (m_nByteSize << 3) ? (m_nByteSize << 3) : toBit;
@@ -386,6 +650,15 @@ void CBitVector::Print(int fromBit, int toBit) {
 		std::cout << (unsigned int) GetBitNoMask(i);
 	}
 	std::cout << std::endl;
+}
+
+void CBitVector::PrintHex(bool linebreak) {
+	for (int i = 0; i < m_nByteSize; i++) {
+		std::cout << std::setw(2) << std::setfill('0') << (std::hex) << ((unsigned int) m_pBits[i]);
+	}
+	if(linebreak){
+		std::cout << (std::dec) << std::endl;
+	}
 }
 
 void CBitVector::PrintHex(int fromByte, int toByte, bool linebreak) {
@@ -399,22 +672,8 @@ void CBitVector::PrintHex(int fromByte, int toByte, bool linebreak) {
 	}
 }
 
-void CBitVector::PrintHex(bool linebreak) {
-	for (int i = 0; i < m_nByteSize; i++) {
-		std::cout << std::setw(2) << std::setfill('0') << (std::hex) << ((unsigned int) m_pBits[i]);
-	}
-	if(linebreak){
-		std::cout << (std::dec) << std::endl;
-	}
-}
-
-void CBitVector::PrintBinaryMasked(int from, int to) {
-	int new_to = to > (m_nByteSize<<3) ? (m_nByteSize<<3) : to;
-
-	for (int i = from; i < new_to; i++) {
-		std::cout << (unsigned int) GetBit(i);
-	}
-	std::cout << std::endl;
+void CBitVector::PrintBinary() {
+	Print(0, m_nByteSize << 3);
 }
 
 void CBitVector::PrintContent() {
@@ -440,31 +699,13 @@ void CBitVector::PrintContent() {
 	}
 }
 
-BOOL CBitVector::IsEqual(CBitVector& vec) {
-	if (vec.GetSize() != m_nByteSize) {
-		return false;
-	}
+void CBitVector::PrintBinaryMasked(int from, int to) {
+	int new_to = to > (m_nByteSize<<3) ? (m_nByteSize<<3) : to;
 
-	BYTE* ptr = vec.GetArr();
-	for (int i = 0; i < m_nByteSize; i++) {
-		if (ptr[i] != m_pBits[i]) {
-			return false;
-		}
+	for (int i = from; i < new_to; i++) {
+		std::cout << (unsigned int) GetBit(i);
 	}
-	return true;
-}
-
-BOOL CBitVector::IsEqual(CBitVector& vec, int from, int to) {
-	if (vec.GetSize() * 8 < to || m_nByteSize * 8 < to || from > to) {
-		return false;
-	}
-
-	for (int i = from; i < to; i++) {
-		if (vec.GetBit(i) != GetBit(i)) {
-			return false;
-		}
-	}
-	return true;
+	std::cout << std::endl;
 }
 
 void CBitVector::Transpose(int rows, int columns) {

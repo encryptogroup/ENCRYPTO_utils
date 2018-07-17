@@ -21,96 +21,10 @@
 
 #include "typedefs.h"
 #include <cassert>
-#include <cstddef>
 #include <cstdint>
-#include <cstdlib>
-#include <cstring>
 
 // forward declarations
 class crypto;
-
-/** Array which stores the bytes which are reversed. For example, the hexadecimal 0x01 is when reversed becomes 0x80.  */
-static const BYTE REVERSE_BYTE_ORDER[256] = { 0x00, 0x80, 0x40, 0xC0, 0x20, 0xA0, 0x60, 0xE0, 0x10, 0x90, 0x50, 0xD0, 0x30, 0xB0, 0x70, 0xF0, 0x08, 0x88, 0x48, 0xC8, 0x28, 0xA8,
-		0x68, 0xE8, 0x18, 0x98, 0x58, 0xD8, 0x38, 0xB8, 0x78, 0xF8, 0x04, 0x84, 0x44, 0xC4, 0x24, 0xA4, 0x64, 0xE4, 0x14, 0x94, 0x54, 0xD4, 0x34, 0xB4, 0x74, 0xF4, 0x0C, 0x8C,
-		0x4C, 0xCC, 0x2C, 0xAC, 0x6C, 0xEC, 0x1C, 0x9C, 0x5C, 0xDC, 0x3C, 0xBC, 0x7C, 0xFC, 0x02, 0x82, 0x42, 0xC2, 0x22, 0xA2, 0x62, 0xE2, 0x12, 0x92, 0x52, 0xD2, 0x32, 0xB2,
-		0x72, 0xF2, 0x0A, 0x8A, 0x4A, 0xCA, 0x2A, 0xAA, 0x6A, 0xEA, 0x1A, 0x9A, 0x5A, 0xDA, 0x3A, 0xBA, 0x7A, 0xFA, 0x06, 0x86, 0x46, 0xC6, 0x26, 0xA6, 0x66, 0xE6, 0x16, 0x96,
-		0x56, 0xD6, 0x36, 0xB6, 0x76, 0xF6, 0x0E, 0x8E, 0x4E, 0xCE, 0x2E, 0xAE, 0x6E, 0xEE, 0x1E, 0x9E, 0x5E, 0xDE, 0x3E, 0xBE, 0x7E, 0xFE, 0x01, 0x81, 0x41, 0xC1, 0x21, 0xA1,
-		0x61, 0xE1, 0x11, 0x91, 0x51, 0xD1, 0x31, 0xB1, 0x71, 0xF1, 0x09, 0x89, 0x49, 0xC9, 0x29, 0xA9, 0x69, 0xE9, 0x19, 0x99, 0x59, 0xD9, 0x39, 0xB9, 0x79, 0xF9, 0x05, 0x85,
-		0x45, 0xC5, 0x25, 0xA5, 0x65, 0xE5, 0x15, 0x95, 0x55, 0xD5, 0x35, 0xB5, 0x75, 0xF5, 0x0D, 0x8D, 0x4D, 0xCD, 0x2D, 0xAD, 0x6D, 0xED, 0x1D, 0x9D, 0x5D, 0xDD, 0x3D, 0xBD,
-		0x7D, 0xFD, 0x03, 0x83, 0x43, 0xC3, 0x23, 0xA3, 0x63, 0xE3, 0x13, 0x93, 0x53, 0xD3, 0x33, 0xB3, 0x73, 0xF3, 0x0B, 0x8B, 0x4B, 0xCB, 0x2B, 0xAB, 0x6B, 0xEB, 0x1B, 0x9B,
-		0x5B, 0xDB, 0x3B, 0xBB, 0x7B, 0xFB, 0x07, 0x87, 0x47, 0xC7, 0x27, 0xA7, 0x67, 0xE7, 0x17, 0x97, 0x57, 0xD7, 0x37, 0xB7, 0x77, 0xF7, 0x0F, 0x8F, 0x4F, 0xCF, 0x2F, 0xAF,
-		0x6F, 0xEF, 0x1F, 0x9F, 0x5F, 0xDF, 0x3F, 0xBF, 0x7F, 0xFF };
-
-/**
-	This array is used by \link XORBits(BYTE* p, int pos, int len) \endlink and \link SetBits(BYTE* p, uint64_t pos, uint64_t len) \endlink
-    method for lower bit mask.
-*/
-static const BYTE RESET_BIT_POSITIONS[9] = { 0x00, 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF };
-/**
-	This array is used by \link XORBits(BYTE* p, int pos, int len) \endlink and \link SetBits(BYTE* p, uint64_t pos, uint64_t len) \endlink
-    method for upper bit mask.
-*/
-static const BYTE RESET_BIT_POSITIONS_INV[9] = { 0x00, 0x80, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE, 0xFF };
-
-/** This array is used by \link GetBits(BYTE* p, int pos, int len) \endlink method for lower bit mask. */
-static const BYTE GET_BIT_POSITIONS[9] = { 0xFF, 0xFE, 0xFC, 0xF8, 0xF0, 0xE0, 0xC0, 0x80, 0x00 };
-
-/** This array is used by \link GetBits(BYTE* p, int pos, int len) \endlink method for upper bit mask. */
-static const BYTE GET_BIT_POSITIONS_INV[9] = { 0xFF, 0x7F, 0x3F, 0x1F, 0x0F, 0x07, 0x03, 0x01, 0x00 };
-
-/**
-	This array is used for masking bits and extracting a particular positional bit from the provided byte array.
-	This array is used by \link GetBit(int idx) \endlink method.
-*/
-static const BYTE MASK_BIT[8] = { 0x80, 0x40, 0x20, 0x10, 0x8, 0x4, 0x2, 0x1 };
-
-/**
-	This array is used for extracting a particular positional bit from the provided byte array without masking.
-	This array is used by \link GetBitNoMask(int idx) \endlink method.
-*/
-static const BYTE BIT[8] = { 0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80 };
-
-/**
-	This array is used for masking bits and setting a particular positional bit from the provided byte array in the CBitVector.
-	This array is used by \link SetBit(int idx, BYTE b) \endlink and \link ANDBit(int idx, BYTE b) \endlink methods.
-*/
-static const BYTE CMASK_BIT[8] = { 0x7f, 0xbf, 0xdf, 0xef, 0xf7, 0xfb, 0xfd, 0xfe };
-
-/**
-	This array is used for setting a particular positional bit from the provided byte array without masking in the CBitVector.
-	This array is used by \link SetBitNoMask(int idx, BYTE b) \endlink and \link ANDBitNoMask(int idx, BYTE b) \endlink methods.
-*/
-static const BYTE C_BIT[8] = { 0xFE, 0xFD, 0xFB, 0xF7, 0xEF, 0xDF, 0xBF, 0x7F };
-
-/**
-	This array is used for masking bits and setting a particular positional bit from the provided byte array in the CBitVector.
-	This array is used by \link SetBit(int idx, BYTE b) \endlink and \link XORBit(int idx, BYTE b) \endlink methods.
-*/
-static const BYTE MASK_SET_BIT_C[2][8] = { { 0x80, 0x40, 0x20, 0x10, 0x8, 0x4, 0x2, 0x1 }, { 0, 0, 0, 0, 0, 0, 0, 0 } };
-
-/**
-	This array is used for setting a particular positional bit from the provided byte array without masking in the CBitVector.
-	This array is used by \link SetBitNoMask(int idx, BYTE b) \endlink and \link XORBitNoMask(int idx, BYTE b) \endlink methods.
-*/
-static const BYTE SET_BIT_C[2][8] = { { 0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80 }, { 0, 0, 0, 0, 0, 0, 0, 0 } };
-
-const BYTE SELECT_BIT_POSITIONS[9] = { 0x00, 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF };
-
-#ifdef MACHINE_SIZE_32
-static const REGISTER_SIZE TRANSPOSITION_MASKS[6] =
-{	0x55555555, 0x33333333, 0x0F0F0F0F, 0x00FF00FF, 0x0000FFFF};
-static const REGISTER_SIZE TRANSPOSITION_MASKS_INV[6] =
-{	0xAAAAAAAA, 0xCCCCCCCC, 0xF0F0F0F0, 0xFF00FF00, 0xFFFF0000};
-#else
-#ifdef MACHINE_SIZE_64
-/** Transposition mask used for Eklund Bit Matrix Transposition.*/
-static const REGISTER_SIZE TRANSPOSITION_MASKS[6] = { 0x5555555555555555, 0x3333333333333333, 0x0F0F0F0F0F0F0F0F, 0x00FF00FF00FF00FF, 0x0000FFFF0000FFFF, 0x00000000FFFFFFFF };
-static const REGISTER_SIZE TRANSPOSITION_MASKS_INV[6] = { 0xAAAAAAAAAAAAAAAA, 0xCCCCCCCCCCCCCCCC, 0xF0F0F0F0F0F0F0F0, 0xFF00FF00FF00FF00, 0xFFFF0000FFFF0000, 0xFFFFFFFF00000000 };
-#else
-#endif
-#endif
-
-static const size_t SHIFTVAL = 3;
 
 /** Class which defines the functionality of storing C-based Bits in vector type format.*/
 class CBitVector {
@@ -119,26 +33,21 @@ public:
 	//Constructor code begins here...
 
 	/** Constructor which initializes the member variables bit pointer and size to NULL and zero respectively. */
-	CBitVector() {
-		Init();
-	}
+	CBitVector();
+
 	/**
 	 	 Overloaded constructor of class \link CBitVector \endlink which calls internally \link Create(uint64_t bits) \endlink
 	 	 \param  bits	 - It is the number of bits which will be used to allocate the CBitVector with. For more info on how these bits are allocated refer to \link Create(uint64_t bits) \endlink
 	 */
-	CBitVector(uint32_t bits) {
-		Init();
-		Create(bits);
-	}
+	CBitVector(uint32_t bits);
+
 	/**
 	 	Overloaded constructor of class \link CBitVector \endlink which calls internally \link Create(uint64_t bits,crypto* crypt) \endlink
 	 	\param  bits	 - It is the number of bits which will be used to allocate the CBitVector with. For more info on how these bits are allocated refer to \link Create(uint64_t bits,crypto* crypt) \endlink
 	 	\param  crypt 	 - This object from crypto class is used to generate pseudo random values for the cbitvector.
 	 */
-	CBitVector(uint32_t bits, crypto* crypt) {
-		Init();
-		Create(bits, crypt);
-	}
+	CBitVector(uint32_t bits, crypto* crypt);
+
 	//Constructor code ends here...
 
 	//Basic Primitive function of allocation and deallocation begins here.
@@ -146,29 +55,18 @@ public:
 	 	 Function which gets called initially when the cbitvector object is created. This method is mostly called from constructor of CBitVector class.
 	 	 The method sets bit pointer and size to NULL and zero respectively.
 	*/
-	void Init() {
-		m_pBits = NULL;
-		m_nByteSize = 0;
-	}
+	void Init();
 
 	/**
 			Destructor which internally calls the delCBitVector for deallocating the space. This method internally calls
 			\link delCBitVector() \endlink.
 	*/
-	~CBitVector(){
-		delCBitVector();
-	};
+	~CBitVector();
 
 	/**
 		This method is used to deallocate the bit pointer and size explicitly. This method needs to be called by the programmer explicitly.
 	*/
-	void delCBitVector() {
-		if (( m_nByteSize > 0 )&& (m_pBits != NULL)) {
-			free(m_pBits);
-		}
-		m_nByteSize = 0;
-		m_pBits = NULL;
-	}
+	void delCBitVector();
 	//Basic Primitive function of allocation and deallocation ends here.
 
 
@@ -205,9 +103,8 @@ public:
 
 		\param  bytes	 - It is the number of bytes which will be used to allocate the CBitVector with.
 	*/
-	void CreateBytes(uint64_t bytes) {
-		Create(bytes << 3);
-	}
+	void CreateBytes(uint64_t bytes);
+
 	/**
 		This method is used to create the CBitVector with the provided byte size and fills it with random data from the crypt object. The method creates a
 		bit vector with a size close to AES Bytesize. For example, if byte size provided is 9. After this method is called it will be 16 bytes. It will perform a ceil of provided_byte_size
@@ -217,9 +114,8 @@ public:
 		\param  bytes	 - It is the number of bytes which will be used to allocate the CBitVector with.
 		\param  crypt	 - Reference to a crypto object from which fresh randomness is sampled
 	*/
-	void CreateBytes(uint64_t bytes, crypto* crypt) {
-		Create(bytes << 3, crypt);
-	}
+	void CreateBytes(uint64_t bytes, crypto* crypt);
+
 	/**
 		This method is used to create the CBitVector with the provided bits and set them to value zero. The method creates a bit vector with a size close to AES Bitsize.
 		And performs an assignment of zero to each bit being allocated. Internally, this method calls \link Create(uint64_t bits) \endlink. Therefore, for further info
@@ -227,10 +123,7 @@ public:
 
 		\param  bits	 - It is the number of bits which will be used to allocate and assign zero values of the CBitVector with.
 	*/
-	void CreateZeros(uint64_t bits) {
-		Create(bits);
-		memset(m_pBits, 0, m_nByteSize);
-	}
+	void CreateZeros(uint64_t bits);
 
 	/**
 		This method is used to create the CBitVector with the provided bits and set them to some random values. The method creates a bit vector with a size close to AES Bitsize.
@@ -299,27 +192,19 @@ public:
 		\link CreateZeros(uint64_t bits) \endlink. The create method mentioned above allocates and sets value to zero. Whereas the provided method only
 		sets the value to zero.
 	*/
-	void Reset() {
-		memset(m_pBits, 0, m_nByteSize);
-	}
+	void Reset();
 
 	/**
 		This method is used to reset the values in the given CBitVector for specific byte range.
 		\param 	frombyte	-	The source byte position from which the values needs to be reset.
 		\param 	tobyte		-	The destination byte position until which the values needs to be reset to.
 	*/
-	void ResetFromTo(int frombyte, int tobyte) {
-		assert(frombyte <= tobyte);
-		assert(tobyte < m_nByteSize);
-		memset(m_pBits + frombyte, 0, tobyte - frombyte);
-	}
+	void ResetFromTo(int frombyte, int tobyte);
 
 	/**
 		This method sets all bit position values in a CBitVector to One.
 	*/
-	void SetToOne() {
-		memset(m_pBits, 0xFF, m_nByteSize);
-	}
+	void SetToOne();
 
 	/**
 		This method sets all bits in the CBitVector to the inverse
@@ -331,9 +216,7 @@ public:
 		This is a getter method which returns the size of the CBitVector in bytes.
 		\return the byte size of CBitVector.
 	*/
-	int GetSize() {
-		return m_nByteSize;
-	}
+	int GetSize();
 
 	/**
 		This method checks if two CBitVectors are equal or not.
@@ -356,18 +239,14 @@ public:
 		around with the multi dimensional arrays/vectors.
 		\param	elelen	-		New element length which can be used to set the object size in a CBitVector.
 	*/
-	void SetElementLength(int elelen) {
-		m_nElementLength = elelen;
-	}
+	void SetElementLength(int elelen);
 
 
 	/**
 		This method gets the element length of the CBitVector.
 		\return element length of the elements in CBitVector.
 	*/
-	uint64_t GetElementLength() {
-		return m_nElementLength;
-	}
+	uint64_t GetElementLength();
 
 	/*
 	 * Copy operations
@@ -378,9 +257,8 @@ public:
 		\link Copy(BYTE* p, int pos, int len) \endlink for copying bytewise.
 		\param	vec		- 		The vector from which the copying needs to be performed.
 	*/
-	void Copy(CBitVector& vec) {
-		Copy(vec.GetArr(), 0, vec.GetSize());
-	}
+	void Copy(CBitVector& vec);
+
 	/**
 		This method is used to copy the provided CBitVector to itself for a given range. It internally calls \link Copy(BYTE* p, int pos, int len) \endlink
 		for copying bytewise. Copying is done in a slightly different way. Here the range is pos and len. The offset is defined for the base vector and not
@@ -390,9 +268,7 @@ public:
 		\param	pos		- 		The positional offset for copying into current vector.
 		\param	len		-		Length or amount of values to be copied to the current vector from provided vector.
 	*/
-	void Copy(CBitVector& vec, int pos, int len) {
-		Copy(vec.GetArr(), pos, len);
-	}
+	void Copy(CBitVector& vec, int pos, int len);
 
 	/**
 		This method is used to copy the current CBitVector with some ByteLocation with positional shift and length. This method is the base method for methods
@@ -422,10 +298,8 @@ public:
 		\param	idx		-		Bit Index which needs to be fetched from the CBitVector.
 		\return The byte which has got just the bit in it.
 	*/
-	BYTE GetBit(int idx) {
-		assert(idx < (m_nByteSize << 3));
-		return !!(m_pBits[idx >> 3] & MASK_BIT[idx & 0x7]);
-	}
+	BYTE GetBit(int idx);
+
 	/**
 		This method sets the bit in the provided index by using the maskbits and the provided bit. The maskbits brings the concept of
 		endianness in the vector. In this method C_MASK_BIT is used to figure out the bits which are assumed to be
@@ -433,10 +307,7 @@ public:
 		\param	idx		-		Bit Index which needs to be written to in the CBitVector.
 		\param	b		-		The bit which being written in the provided index.
 	*/
-	void SetBit(int idx, BYTE b) {
-		assert(idx < (m_nByteSize << 3));
-		m_pBits[idx >> 3] = (m_pBits[idx >> 3] & CMASK_BIT[idx & 0x7]) | MASK_SET_BIT_C[!(b & 0x01)][idx & 0x7];
-	}
+	void SetBit(int idx, BYTE b);
 
 	/**
 		This method gets the bit in the provided index without using the maskbits. The maskbits brings the concept of
@@ -444,10 +315,7 @@ public:
 		\param	idx		-		Bit Index which needs to be fetched from the CBitVector.
 		\return The byte which has got just the bit in it.
 	*/
-	BYTE GetBitNoMask(uint64_t idx) {
-		assert(idx < (m_nByteSize << 3));
-		return !!(m_pBits[idx >> 3] & BIT[idx & 0x7]);
-	}
+	BYTE GetBitNoMask(uint64_t idx);
 
 	/**
 		This method sets the bit in the provided index without using the maskbits. The maskbits brings the concept of
@@ -455,10 +323,7 @@ public:
 		\param	idx		-		Bit Index which needs to be written to in the CBitVector.
 		\param	b		-		The bit which being written in the provided index.
 	*/
-	void SetBitNoMask(int idx, BYTE b) {
-		assert(idx < (m_nByteSize << 3));
-		m_pBits[idx >> 3] = (m_pBits[idx >> 3] & C_BIT[idx & 0x7]) | SET_BIT_C[!(b & 0x01)][idx & 0x7];
-	}
+	void SetBitNoMask(int idx, BYTE b);
 
 	/**
 		This method XORs the bit in the provided index without using the maskbits. The maskbits brings the concept of
@@ -466,10 +331,7 @@ public:
 		\param	idx		-		Bit Index which needs to be XORed to in the CBitVector.
 		\param	b		-		The bit which being XORed in the provided index.
 	*/
-	void XORBitNoMask(int idx, BYTE b) {
-		assert(idx < (m_nByteSize << 3));
-		m_pBits[idx >> 3] ^= SET_BIT_C[!(b & 0x01)][idx & 0x7];
-	}
+	void XORBitNoMask(int idx, BYTE b);
 
 	/*
 	 * Single byte operations
@@ -480,20 +342,14 @@ public:
 		\param	idx		-	Index where the byte needs to be set.
 		\param	p		-	Byte which needs to be copied to.
 	*/
-	void SetByte(int idx, BYTE p) {
-		assert(idx < m_nByteSize);
-		m_pBits[idx] = p;
-	}
+	void SetByte(int idx, BYTE p);
 
 	/**
 		This method returns the byte at the given index in the CBitVector. Here the index is w.r.t bytes.
 		\param	idx		-	Index of the byte which needs to be returned from the CBitVector.
 		\return Byte is returned from CBitVector at the given index.
 	*/
-	BYTE GetByte(int idx) {
-		assert(idx < m_nByteSize);
-		return m_pBits[idx];
-	}
+	BYTE GetByte(int idx);
 
 	/**
 		Not Used Currently in Framework.
@@ -501,19 +357,14 @@ public:
 		\param	idx		-	Index of the byte which needs to be XORed inside the CBitVector.
 		\param	b		- 	Byte to be XORed with the CBitVector.
 	*/
-	void XORByte(int idx, BYTE b) {
-		assert(idx < m_nByteSize);
-		m_pBits[idx] ^= b;
-	}
+	void XORByte(int idx, BYTE b);
+
 	/**
 		This method performs AND operation at the given index in the CBitVector with a provided Byte.
 		\param	idx		-	Index of the byte which needs to be ANDed inside the CBitVector.
 		\param	b		- 	Byte to be ANDed with the CBitVector.
 	*/
-	void ANDByte(int idx, BYTE b) {
-		assert(idx < m_nByteSize);
-		m_pBits[idx] &= b;
-	}
+	void ANDByte(int idx, BYTE b);
 
 	/*
 	 * Get Operations
@@ -536,11 +387,6 @@ public:
 		\param	len		- 	The range limit of obtaining the data from the CBitVector.
 	*/
 	void GetBytes(BYTE* p, int pos, int len);
-
-	/**
-		Generic method which performs the operation of getting bytes from source for the given limit.
-	*/
-	template<class T> void GetBytes(T* dst, T* src, T* lim);
 
 	/**
 		Generic method which performs the operation of getting values from a CBitVector for a given bit position and length.
@@ -575,9 +421,7 @@ public:
 		\param	pos		-	Positional offset in the CBitVector, where data will be set from the provided byte array.
 		\param	len		-   The range limit of obtaining the data from the CBitVector.
 	*/
-	void SetBits(BYTE* p, int pos, int len) {
-		SetBits(p, (uint64_t) pos, (uint64_t) len);
-	}
+	void SetBits(BYTE* p, int pos, int len);
 
 	/**
 		The method for setting CBitVector for a given bit range with offsets and length with another Byte Array.
@@ -596,12 +440,6 @@ public:
 		\param	len		-   The number of bytes to be set.
 	*/
 	void SetBytes(const BYTE* src, const uint64_t pos, const uint64_t len);
-
-	/**
-		Generic method which performs the operation of setting bytes from source for the given limit. This method is called from
-		\link SetBytes(BYTE* p, int pos, int len) \endlink.
-	*/
-	template<class T> void SetBytes(T* dst, const  T* src, const T* lim);
 
 	/**
 		This method sets the values in a given byte range to Zero in the current CBitVector.
@@ -646,9 +484,7 @@ public:
 		\param	p		- 		Byte Array to be XORed with the CBitVector range.
 		\param	len		-  		Length or amount of values to be XORed to the current vector from provided byte location.
 	*/
-	void XORBytes(BYTE* p, int len) {
-		XORBytes(p, 0, len);
-	}
+	void XORBytes(BYTE* p, int len);
 
 	/**
 	 	Not Used in the Framework.
@@ -658,9 +494,7 @@ public:
 		\param	pos		-		Positional offset for XORing into current CBitVector.
 		\param	len		-  		Length or amount of values to be XORed to the current vector from provided byte location.
 	*/
-	void XORVector(CBitVector &vec, int pos, int len) {
-		XORBytes(vec.GetArr(), pos, len);
-	}
+	void XORVector(CBitVector &vec, int pos, int len);
 
 	/**
 		Generic method which is used to XOR bit wise the CBitVector. This method internally calls
@@ -690,12 +524,6 @@ public:
 	void XORBitsPosOffset(BYTE* p, int ppos, int pos, int len);
 
 	/**
-		Generic method which is used to XOR byte wise the CBitVector. This method is called from
-		\link XORBytes(BYTE* p, int pos, int len) \endlink.
-	*/
-	template<class T> void XORBytes(T* dst, T* src, T* lim);
-
-	/**
 		Set the value of this CBitVector to this XOR b
 		\param	b		-	Pointer to a CBitVector which is XORed on this CBitVector
 	*/
@@ -723,12 +551,6 @@ public:
 		\param	len		-  		Length or amount of values to be ANDed to the current vector from provided byte location.
 	*/
 	void ANDBytes(BYTE* p, int pos, int len);
-
-	/**
-		Generic method which is used to AND byte wise the CBitVector. This method is called from
-		\link ANDBytes(BYTE* p, int pos, int len) \endlink.
-	*/
-	template<class T> void ANDBytes(T* dst, T* src, T* lim);
 
 	/*
 	 * Set operations
@@ -775,27 +597,18 @@ public:
 	/**
 		This method returns CBitVector in byte array format. This is very widely used method.
 	*/
-	BYTE* GetArr() {
-		return m_pBits;
-	}
+	BYTE* GetArr();
 
 	/**
 		This method is used to attach a new buffer into the CBitVector provided as arguments to this method.
 		\param	p		-		Pointer to the byte location to be attached to the CBitVector.
 		\param  size	-		Number of bytes attached from the provided buffer.
 	*/
-	void AttachBuf(BYTE* p, uint64_t size = -1) {
-		m_pBits = p;
-		m_nByteSize = size;
-	}
-
+	void AttachBuf(BYTE* p, uint64_t size = -1);
 
 	/**
 		This method is used to detach the buffer from the CBitVector. */
-	void DetachBuf() {
-		m_pBits = NULL;
-		m_nByteSize = 0;
-	}
+	void DetachBuf();
 
 	/*
 	 * Print Operations
@@ -824,9 +637,7 @@ public:
 	/**
 		This method prints the CBitVector in Binary format. This method internally calls \link Print(int fromBit, int toBit) \endlink.
 	*/
-	void PrintBinary() {
-		Print(0, m_nByteSize << 3);
-	}
+	void PrintBinary();
 
 	/**
 		This method is a more abstract printing method which is used to print the CBitVector even if the vector is a simple 1 bit based
@@ -890,8 +701,8 @@ public:
 
 	//View the cbitvector as a rows x columns matrix and transpose
 	void Transpose(int rows, int columns);
-	void EklundhBitTranspose(int rows, int columns);
 	void SimpleTranspose(int rows, int columns);
+	void EklundhBitTranspose(int rows, int columns);
 
 private:
 	BYTE* m_pBits;	/** Byte pointer which stores the CBitVector as simple byte array. */
