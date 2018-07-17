@@ -36,6 +36,7 @@ add_library(encrypto_utils
     src/${PROJECT_NAME}/powmod.cpp
     src/${PROJECT_NAME}/rcvthread.cpp
     src/${PROJECT_NAME}/sndthread.cpp
+    src/${PROJECT_NAME}/socket.cpp
 )
 add_library(ENCRYPTO_utils::encrypto_utils ALIAS encrypto_utils)
 

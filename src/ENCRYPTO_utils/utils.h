@@ -7,6 +7,12 @@
 #include <iostream>
 #include <unistd.h>
 
+#ifdef WIN32
+#define SleepMiliSec(x)	Sleep(x)
+#else
+#define SleepMiliSec(x)			usleep((x)<<10)
+#endif
+
 #define two_pow(e) (((uint64_t) 1) << (e))
 
 #define pad_to_power_of_two(e) ( ((uint64_t) 1) << (ceil_log2(e)) )
