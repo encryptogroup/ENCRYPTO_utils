@@ -1,5 +1,6 @@
 #include "channel.h"
 
+#include "typedefs.h"
 #include "rcvthread.h"
 #include "sndthread.h"
 #include <cassert>

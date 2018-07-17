@@ -8,157 +8,48 @@
 #ifndef SND_THREAD_H_
 #define SND_THREAD_H_
 
-#include "constants.h"
-#include "socket.h"
 #include "thread.h"
-#include <cassert>
+#include <memory>
 #include <queue>
 
-struct snd_task {
-	uint8_t channelid;
-	uint64_t bytelen;
-	uint8_t* snd_buf;
-};
+class CSocket;
 
 
 class SndThread: public CThread {
 public:
-	SndThread(CSocket* sock, CLock *glock) {
-		mysock = sock;
-		sndlock = glock;
-		send = new CEvent();
-	}
-	;
+	SndThread(CSocket* sock, CLock *glock);
 
-	void stop() {
-		kill_task();
-	}
+	void stop();
 
-	~SndThread() {
-		kill_task();
-		this->Wait();
-	}
-	;
+	~SndThread();
 
-    CLock *getlock() {
-        return sndlock;
-    }
-    ;
+	CLock* getlock() const;
 
-    void setlock(CLock *glock) {
-        sndlock = glock;
-    }
-    ;
+    void setlock(CLock *glock);
 
-	void add_snd_task_start_len(uint8_t channelid, uint64_t sndbytes, uint8_t* sndbuf, uint64_t startid, uint64_t len) {
-		snd_task* task = (snd_task*) malloc(sizeof(snd_task));
-		assert(channelid != ADMIN_CHANNEL);
-		task->channelid = channelid;
-		task->bytelen = sndbytes + 2 * sizeof(uint64_t);
-		task->snd_buf = (uint8_t*) malloc(task->bytelen);
-		memcpy(task->snd_buf, &startid, sizeof(uint64_t));
-		memcpy(task->snd_buf+sizeof(uint64_t), &len, sizeof(uint64_t));
-		memcpy(task->snd_buf+2*sizeof(uint64_t), sndbuf, sndbytes);
-
-		//cout << "Adding a new task that is supposed to send " << task->bytelen << " bytes on channel " << (uint32_t) channelid  << endl;
-
-		sndlock->Lock();
-		send_tasks.push(task);
-		sndlock->Unlock();
-		send->Set();
-	}
+	void add_snd_task_start_len(uint8_t channelid, uint64_t sndbytes, uint8_t* sndbuf, uint64_t startid, uint64_t len);
 
 
-	void add_snd_task(uint8_t channelid, uint64_t sndbytes, uint8_t* sndbuf) {
-		snd_task* task = (snd_task*) malloc(sizeof(snd_task));
-		assert(channelid != ADMIN_CHANNEL);
-		task->channelid = channelid;
-		task->bytelen = sndbytes;
-		task->snd_buf = (uint8_t*) malloc(sndbytes);
-		memcpy(task->snd_buf, sndbuf, task->bytelen);
+	void add_snd_task(uint8_t channelid, uint64_t sndbytes, uint8_t* sndbuf);
 
-		sndlock->Lock();
-		send_tasks.push(task);
-		sndlock->Unlock();
-		send->Set();
-		//cout << "Event set" << endl;
+	void signal_end(uint8_t channelid);
 
-	}
+	void kill_task();
 
-	void signal_end(uint8_t channelid) {
-		uint8_t dummy_val;
-		add_snd_task(channelid, 0, &dummy_val);
-		//cout << "Signalling end on channel " << (uint32_t) channelid << endl;
-	}
+	void ThreadMain();
 
-	void kill_task() {
-		snd_task* task = (snd_task*) malloc(sizeof(snd_task));
-		task->channelid = ADMIN_CHANNEL;
-		task->bytelen = 1;
-		task->snd_buf = (uint8_t*) calloc(1, 1);
-
-		sndlock->Lock();
-		send_tasks.push(task);
-		sndlock->Unlock();
-		send->Set();
-#ifdef DEBUG_SEND_THREAD
-		cout << "Killing channel " << (uint32_t) task->channelid << endl;
-#endif
-	}
-
-	void ThreadMain() {
-		uint8_t channelid;
-		uint32_t iters;
-		snd_task* task;
-		bool run = true;
-		bool empty = true;
-		while(run) {
-			sndlock->Lock();
-			empty = send_tasks.empty();
-			sndlock->Unlock();
-
-			if(empty){
-				send->Wait();
-			}
-			//cout << "Awoken" << endl;
-
-			sndlock->Lock();
-			iters = send_tasks.size();
-			sndlock->Unlock();
-
-			while((iters--) && run) {
-				sndlock->Lock();
-				task = send_tasks.front();
-				send_tasks.pop();
-				sndlock->Unlock();
-				channelid = task->channelid;
-				mysock->Send(&channelid, sizeof(uint8_t));
-				mysock->Send(&task->bytelen, sizeof(uint64_t));
-				if(task->bytelen > 0) {
-					mysock->Send(task->snd_buf, task->bytelen);
-				}
-
-#ifdef DEBUG_SEND_THREAD
-				cout << "Sending on channel " <<  (uint32_t) channelid << " a message of " << task->bytelen << " bytes length" << endl;
-#endif
-
-				free(task->snd_buf);
-				free(task);
-
-				if(channelid == ADMIN_CHANNEL) {
-					//delete sndlock;
-					delete send;
-					run = false;
-				}
-			}
-		}
-	}
-	;
 private:
-	CLock* sndlock;
+	struct snd_task {
+		uint8_t channelid;
+		std::vector<uint8_t> snd_buf;
+	};
+
+	void push_task(std::unique_ptr<snd_task> task);
+
 	CSocket* mysock;
-	CEvent* send;
-	std::queue<snd_task*> send_tasks;
+	CLock* sndlock;
+	std::unique_ptr<CEvent> send;
+	std::queue<std::unique_ptr<snd_task>> send_tasks;
 };
 
 
