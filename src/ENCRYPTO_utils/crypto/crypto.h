@@ -21,10 +21,10 @@
 
 #include <openssl/evp.h>
 #include "../constants.h"
-#include "../socket.h"
 
 // forward declarations
 class pk_crypto;
+class CSocket;
 
 const uint8_t ZERO_IV[AES_BYTES] = { 0 };
 

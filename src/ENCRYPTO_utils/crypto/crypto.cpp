@@ -17,10 +17,12 @@
  */
 
 #include "crypto.h"
+#include "../socket.h"
 #include <openssl/sha.h>
 #include <openssl/des.h>
 #include "ecc-pk-crypto.h"
 #include "gmp-pk-crypto.h"
+#include <cstring>
 #include <utility>
 
 crypto::crypto(uint32_t symsecbits, uint8_t* seed) {
