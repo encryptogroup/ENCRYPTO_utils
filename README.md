@@ -1,5 +1,4 @@
-# ENCRYPTO_utils
-[![Build Status](https://travis-ci.org/encryptogroup/ENCRYPTO_utils.svg?branch=master)](https://travis-ci.org/encryptogroup/ENCRYPTO_utils)
+# ENCRYPTO_utils  [![Build Status](https://travis-ci.org/encryptogroup/ENCRYPTO_utils.svg?branch=master)](https://travis-ci.org/encryptogroup/ENCRYPTO_utils)
 Crypto and networking utils used for ABY and OTExtension
 
 ## Build
