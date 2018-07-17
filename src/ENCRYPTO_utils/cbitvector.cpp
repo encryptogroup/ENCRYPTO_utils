@@ -317,20 +317,6 @@ template<class T> void CBitVector::XORBytes(T* dst, T* src, T* lim) {
 }
 
 
-void CBitVector::XORRepeat(BYTE* p, int pos, int len, int num) {
-	assert(pos+len <= m_nByteSize); 
-	unsigned short* dst = (unsigned short*) (m_pBits + pos);
-	unsigned short* src = (unsigned short*) p;
-	unsigned short* lim = (unsigned short*) (m_pBits + pos + len);
-	for (int i = num; dst != lim;) {
-		*dst++ ^= *src++;
-		if (!(--i)) {
-			src = (unsigned short*) p;
-			i = num;
-		}
-	}
-}
-
 //optimized bytewise for set operation
 void CBitVector::SetBytes(const BYTE *src, const uint64_t pos, const uint64_t len) {
 	assert(pos + len <= m_nByteSize);
@@ -479,35 +465,6 @@ BOOL CBitVector::IsEqual(CBitVector& vec, int from, int to) {
 		}
 	}
 	return true;
-}
-
-void CBitVector::XOR_no_mask(int p, int bitPos, int bitLen) {
-	if (!bitLen)
-		return;
-
-	int i = bitPos >> 3, j = 8 - (bitPos & 0x7), k;
-
-	m_pBits[i++] ^= (GetIntBitsFromLen(p, 0, std::min(j, bitLen)) << (8 - j)) & 0xFF;
-
-	for (k = bitLen - j; k > 0; k -= 8, i++, j += 8) {
-		m_pBits[i] ^= GetIntBitsFromLen(p, j, std::min(8, k));
-	}
-}
-
-unsigned int CBitVector::GetInt(int bitPos, int bitLen) {
-	assert(bitLen <= sizeof(int) * 8);
-	assert(bitPos + bitLen <= (m_nByteSize <<3));
-
-	int ret = 0, i = bitPos >> 3, j = (bitPos & 0x7), k;
-	ret = (m_pBits[i++] >> (j)) & (GetMask(std::min(8, bitLen)));
-	if (bitLen == 1)
-		return ret;
-	j = 8 - j;
-	for (k = bitLen - j; i < (bitPos + bitLen + 7) / 8 - 1; i++, j += 8, k -= 8) {
-		ret |= m_pBits[i] << j;
-	}
-	ret |= (m_pBits[i] & SELECT_BIT_POSITIONS[k]) << j; //for the last execution 0<=k<=8
-	return ret;
 }
 
 void CBitVector::Transpose(int rows, int columns) {

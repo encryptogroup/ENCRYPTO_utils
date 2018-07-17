@@ -29,8 +29,6 @@
 // forward declarations
 class crypto;
 
-/** Deprecated. */
-static const BYTE REVERSE_NIBBLE_ORDER[16] = { 0x0, 0x8, 0x4, 0xC, 0x2, 0xA, 0x6, 0xE, 0x1, 0x9, 0x5, 0xD, 0x3, 0xB, 0x7, 0xF };
 /** Array which stores the bytes which are reversed. For example, the hexadecimal 0x01 is when reversed becomes 0x80.  */
 static const BYTE REVERSE_BYTE_ORDER[256] = { 0x00, 0x80, 0x40, 0xC0, 0x20, 0xA0, 0x60, 0xE0, 0x10, 0x90, 0x50, 0xD0, 0x30, 0xB0, 0x70, 0xF0, 0x08, 0x88, 0x48, 0xC8, 0x28, 0xA8,
 		0x68, 0xE8, 0x18, 0x98, 0x58, 0xD8, 0x38, 0xB8, 0x78, 0xF8, 0x04, 0x84, 0x44, 0xC4, 0x24, 0xA4, 0x64, 0xE4, 0x14, 0x94, 0x54, 0xD4, 0x34, 0xB4, 0x74, 0xF4, 0x0C, 0x8C,
@@ -60,11 +58,6 @@ static const BYTE GET_BIT_POSITIONS[9] = { 0xFF, 0xFE, 0xFC, 0xF8, 0xF0, 0xE0, 0
 /** This array is used by \link GetBits(BYTE* p, int pos, int len) \endlink method for upper bit mask. */
 static const BYTE GET_BIT_POSITIONS_INV[9] = { 0xFF, 0x7F, 0x3F, 0x1F, 0x0F, 0x07, 0x03, 0x01, 0x00 };
 
-/** Deprecated */
-static const int INT_MASK[8] = { 0xFF, 0x7F, 0x3F, 0x1F, 0x0F, 0x07, 0x03, 0x01 };
-
-/** Deprecated */
-static const int FIRST_MASK_SHIFT[8] = { 0xFF00, 0x7F80, 0x3FC0, 0x1FE0, 0x0FF0, 0x07F8, 0x03FC, 0x01FE };
 /**
 	This array is used for masking bits and extracting a particular positional bit from the provided byte array.
 	This array is used by \link GetBit(int idx) \endlink method.
@@ -88,10 +81,6 @@ static const BYTE CMASK_BIT[8] = { 0x7f, 0xbf, 0xdf, 0xef, 0xf7, 0xfb, 0xfd, 0xf
 	This array is used by \link SetBitNoMask(int idx, BYTE b) \endlink and \link ANDBitNoMask(int idx, BYTE b) \endlink methods.
 */
 static const BYTE C_BIT[8] = { 0xFE, 0xFD, 0xFB, 0xF7, 0xEF, 0xDF, 0xBF, 0x7F };
-/** Deprecated */
-static const BYTE MASK_SET_BIT[2][8] = { { 0, 0, 0, 0, 0, 0, 0, 0 }, { 0x80, 0x40, 0x20, 0x10, 0x8, 0x4, 0x2, 0x1 } };
-
-
 
 /**
 	This array is used for masking bits and setting a particular positional bit from the provided byte array in the CBitVector.
@@ -414,14 +403,6 @@ public:
 	*/
 	void Copy(BYTE* p, int pos, int len);
 
-	/** Deprecated */
-	void XOR_no_mask(int p, int bitPos, int bitLen);
-
-	/** Deprecated */
-	unsigned int GetInt(int bitPos, int bitLen);
-#define GetIntBitsFromLen(x, from, len) 	( ( (x & ( ( (2<<(len))-1) << from )) >> from) & 0xFF)
-#define GetMask(len) 				(( (1<<(len))-1))
-
 	/**
 		This method performs OR operation bytewise with the current CBitVector at the provided byte position with another Byte object.
 		\param	pos		- 		Byte position in the CBitVector which is used to perform OR operation with.
@@ -456,34 +437,6 @@ public:
 		assert(idx < (m_nByteSize << 3));
 		m_pBits[idx >> 3] = (m_pBits[idx >> 3] & CMASK_BIT[idx & 0x7]) | MASK_SET_BIT_C[!(b & 0x01)][idx & 0x7];
 	}
-	/* Deprecated */
-	/**
-		This method XORs the bit in the provided index by using the maskbits and the provided bit. The maskbits brings the concept of
-		endianness in the vector. In this method MASK_SET_BIT is used to extract and set the bits which are assumed to be
-		organized in Little Endian form.
-		\param	idx		-		Bit Index which needs to be XORed to in the CBitVector.
-		\param	b		-		The bit which being XORed in the provided index.
-	*/
-	void XORBit(int idx, BYTE b) {
-		assert(idx < (m_nByteSize << 3));
-		m_pBits[idx >> 3] ^= MASK_SET_BIT_C[!(b & 0x01)][idx & 0x7];
-	}
-
-	/* Deprecated */
-	/**
-		This method ANDs the bit in the provided index by using the maskbits and the provided bit. The maskbits brings the concept of
-		endianness in the vector. In this method C_MASK_BIT is used to extract and set the bits which are assumed to be
-		organized in Little Endian form.
-		\param	idx		-		Bit Index which needs to be ANDed to in the CBitVector.
-		\param	b		-		The bit which being ANDed in the provided index.
-	*/
-	void ANDBit(int idx, BYTE b) {
-		assert(idx < (m_nByteSize << 3));
-		if (!b)
-			m_pBits[idx >> 3] &= CMASK_BIT[idx & 0x7];
-	}
-
-	//used to access bits in the regular order
 
 	/**
 		This method gets the bit in the provided index without using the maskbits. The maskbits brings the concept of
@@ -516,19 +469,6 @@ public:
 	void XORBitNoMask(int idx, BYTE b) {
 		assert(idx < (m_nByteSize << 3));
 		m_pBits[idx >> 3] ^= SET_BIT_C[!(b & 0x01)][idx & 0x7];
-	}
-
-	/* Deprecated */
-	/**
-		This method ANDs the bit in the provided index without using the maskbits. The maskbits brings the concept of
-		endianness in the vector. In this method mask bits are not used so the vector is treated in Big Endian form.
-		\param	idx		-		Bit Index which needs to be ANDed to in the CBitVector.
-		\param	b		-		The bit which being ANDed in the provided index.
-	*/
-	void ANDBitNoMask(int idx, BYTE b) {
-		assert(idx < (m_nByteSize << 3));
-		if (!b)
-			m_pBits[idx >> 3] &= C_BIT[idx & 0x7];
 	}
 
 	/*
@@ -770,9 +710,6 @@ public:
 		\param	b		-	Pointer to a CBitVector which is XORed on this CBitVector
 	*/
 	void XOR(CBitVector* b);
-
-	/** Deprecated */
-	void XORRepeat(BYTE* p, int pos, int len, int num);
 
 	/**
 		This method performs XOR operation from a given position in the CBitVector with a provided Byte Array with a length.
