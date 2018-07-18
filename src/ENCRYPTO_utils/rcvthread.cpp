@@ -30,7 +30,7 @@ void RcvThread::setlock(CLock *glock) {
 }
 
 void RcvThread::flush_queue(uint8_t channelid) {
-	std::lock_guard<CLock> lock(*rcvlock);
+	std::lock_guard<std::mutex> lock(listeners[channelid].rcv_buf_mutex);
 	while(!listeners[channelid].rcv_buf.empty()) {
 		rcv_ctx* tmp = listeners[channelid].rcv_buf.front();
 		free(tmp->buf);
@@ -54,7 +54,9 @@ void RcvThread::remove_listener(uint8_t channelid) {
 	rcvlock->Unlock();
 
 }
-std::queue<rcv_ctx*>* RcvThread::add_listener(uint8_t channelid, CEvent* rcv_event, CEvent* fin_event) {
+
+std::queue<rcv_ctx*>*
+RcvThread::add_listener(uint8_t channelid, CEvent* rcv_event, CEvent* fin_event) {
 	rcvlock->Lock();
 #ifdef DEBUG_RECEIVE_THREAD
 	cout << "Registering listener on channel " << (uint32_t) channelid << endl;
@@ -81,6 +83,11 @@ std::queue<rcv_ctx*>* RcvThread::add_listener(uint8_t channelid, CEvent* rcv_eve
 		remove_listener(channelid);
 	}
 	return &listeners[channelid].rcv_buf;
+}
+
+std::mutex& RcvThread::get_listener_mutex(uint8_t channelid)
+{
+	return listeners[channelid].rcv_buf_mutex;
 }
 
 
@@ -121,7 +128,11 @@ void RcvThread::ThreadMain() {
 
 				mysock->Receive(rcv_buf->buf, rcvbytelen);
 				rcvlock->Lock();
-				listeners[channelid].rcv_buf.push(rcv_buf);
+
+				{
+					std::lock_guard<std::mutex> lock(listeners[channelid].rcv_buf_mutex);
+					listeners[channelid].rcv_buf.push(rcv_buf);
+				}
 
 				bool cond = listeners[channelid].inuse;
 				rcvlock->Unlock();

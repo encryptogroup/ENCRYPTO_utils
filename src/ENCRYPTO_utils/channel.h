@@ -10,6 +10,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <mutex>
 #include <queue>
 
 class RcvThread;
@@ -30,7 +31,7 @@ public:
 	//buf needs to be freed, data contains the payload
 	uint8_t* blocking_receive_id_len(uint8_t** data, uint64_t* id, uint64_t* len);
 
-    bool queue_empty();
+    bool queue_empty() const;
 
 	uint8_t* blocking_receive();
 
@@ -52,10 +53,10 @@ private:
 	SndThread* m_cSnder;
 	std::unique_ptr<CEvent> m_eRcved;
 	std::unique_ptr<CEvent> m_eFin;
-	CLock* chnllock;
 	bool m_bSndAlive;
 	bool m_bRcvAlive;
 	std::queue<rcv_ctx*>* m_qRcvedBlocks;
+	std::mutex& m_qRcvedBlocks_mutex_;
 };
 
 

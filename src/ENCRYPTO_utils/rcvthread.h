@@ -37,6 +37,7 @@ public:
 	void remove_listener(uint8_t channelid);
 
 	std::queue<rcv_ctx*>* add_listener(uint8_t channelid, CEvent* rcv_event, CEvent* fin_event);
+	std::mutex& get_listener_mutex(uint8_t channelid);
 
 	void ThreadMain();
 
@@ -44,6 +45,7 @@ private:
 	//A receive task listens to a particular id and writes incoming data on that id into rcv_buf and triggers event
 	struct rcv_task {
 		std::queue<rcv_ctx*> rcv_buf;
+		std::mutex rcv_buf_mutex;
 		//std::queue<uint64_t> rcvbytes;
 		CEvent* rcv_event;
 		CEvent* fin_event;
