@@ -127,6 +127,7 @@ void gen_rnd_bytes(prf_state_ctx* prf_state, uint8_t* resbuf, uint32_t nbytes) {
 }
 
 void crypto::gen_rnd(uint8_t* resbuf, uint32_t nbytes) {
+	std::lock_guard<std::mutex> lock(global_prf_state_mutex);
 	gen_rnd_bytes(&global_prf_state, resbuf, nbytes);
 }
 

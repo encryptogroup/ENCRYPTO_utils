@@ -21,6 +21,7 @@
 
 #include <openssl/evp.h>
 #include "../constants.h"
+#include <mutex>
 
 // forward declarations
 class pk_crypto;
@@ -120,6 +121,7 @@ private:
 	AES_KEY_CTX aes_enc_key;
 	AES_KEY_CTX aes_dec_key;
 	prf_state_ctx global_prf_state;
+	std::mutex global_prf_state_mutex;
 
 	seclvl secparam;
 	uint8_t* aes_hash_in_buf;
