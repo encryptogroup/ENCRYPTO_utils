@@ -20,6 +20,7 @@
 #define __SOCKET_H__BY_SGCHOI
 
 #include <cstdint>
+#include <mutex>
 #include <string>
 
 // moved here from typedefs.h
@@ -51,8 +52,8 @@ public:
 	CSocket();
 	~CSocket();
 
-	uint64_t getSndCnt();
-	uint64_t getRcvCnt();
+	uint64_t getSndCnt() const;
+	uint64_t getRcvCnt() const;
 	void ResetSndCnt();
 	void ResetRcvCnt();
 
@@ -64,9 +65,9 @@ public:
 
 	void Detach();
 
-	std::string GetIP();
+	std::string GetIP() const;
 
-	uint16_t GetPort();
+	uint16_t GetPort() const;
 
 	bool Bind(uint16_t nPort = 0, std::string ip = "");
 
@@ -83,6 +84,8 @@ public:
 private:
 	SOCKET m_hSock;
 	uint64_t m_nSndCount, m_nRcvCount;
+	mutable std::mutex m_nSndCount_mutex_;
+	mutable std::mutex m_nRcvCount_mutex_;
 };
 
 #endif //SOCKET_H__BY_SGCHOI

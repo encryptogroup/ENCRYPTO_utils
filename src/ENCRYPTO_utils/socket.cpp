@@ -53,17 +53,21 @@ CSocket::~CSocket() {
 	Close();
 }
 
-uint64_t CSocket::getSndCnt() {
+uint64_t CSocket::getSndCnt() const {
+	std::lock_guard<std::mutex> lock(m_nSndCount_mutex_);
 	return m_nSndCount;
 }
-uint64_t CSocket::getRcvCnt() {
+uint64_t CSocket::getRcvCnt() const {
+	std::lock_guard<std::mutex> lock(m_nRcvCount_mutex_);
 	return m_nRcvCount;
 }
 void CSocket::ResetSndCnt() {
+	std::lock_guard<std::mutex> lock(m_nSndCount_mutex_);
 	m_nSndCount = 0;
 }
 ;
 void CSocket::ResetRcvCnt() {
+	std::lock_guard<std::mutex> lock(m_nRcvCount_mutex_);
 	m_nRcvCount = 0;
 }
 ;
@@ -120,7 +124,7 @@ void CSocket::Detach() {
 	m_hSock = INVALID_SOCKET;
 }
 
-std::string CSocket::GetIP() {
+std::string CSocket::GetIP() const {
 	sockaddr_in addr;
 	socklen_t addr_len = sizeof(addr);
 
@@ -129,7 +133,7 @@ std::string CSocket::GetIP() {
 	return inet_ntoa(addr.sin_addr);
 }
 
-uint16_t CSocket::GetPort() {
+uint16_t CSocket::GetPort() const {
 	sockaddr_in addr;
 	socklen_t addr_len = sizeof(addr);
 
@@ -249,7 +253,10 @@ uint64_t CSocket::Receive(void* pBuf, uint64_t nLen, int nFlags) {
 	ssize_t ret = 0;
 #endif
 
-	m_nRcvCount += nLen;
+	{
+		std::lock_guard<std::mutex> lock(m_nRcvCount_mutex_);
+		m_nRcvCount += nLen;
+	}
 
 	while (n > 0) {
 		ret = recv(m_hSock, p, n, nFlags);
@@ -289,7 +296,10 @@ int CSocket::Send(const void* pBuf, uint64_t nLen, int nFlags) {
 #else // POSIX
 	ssize_t ret = 0;
 #endif
-	m_nSndCount += nLen;
+	{
+		std::lock_guard<std::mutex> lock(m_nSndCount_mutex_);
+		m_nSndCount += nLen;
+	}
 
 	while (n > 0) {
 		ret = send(m_hSock, p, n, nFlags);
