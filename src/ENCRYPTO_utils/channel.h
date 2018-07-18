@@ -44,9 +44,6 @@ public:
 
 	void wait_for_fin();
 
-	// FIXME: does nothing
-	void synchronize();
-
 	void synchronize_end();
 
 private:

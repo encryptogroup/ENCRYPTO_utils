@@ -113,11 +113,6 @@ void channel::wait_for_fin() {
 	m_bRcvAlive = false;
 }
 
-//TODO
-void channel::synchronize() {
-
-}
-
 void channel::synchronize_end() {
 	if(m_bSndAlive)
 		signal_end();
