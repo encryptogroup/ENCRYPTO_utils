@@ -30,6 +30,7 @@ void RcvThread::setlock(CLock *glock) {
 }
 
 void RcvThread::flush_queue(uint8_t channelid) {
+	std::lock_guard<CLock> lock(*rcvlock);
 	while(!listeners[channelid].rcv_buf.empty()) {
 		rcv_ctx* tmp = listeners[channelid].rcv_buf.front();
 		free(tmp->buf);
