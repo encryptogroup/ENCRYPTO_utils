@@ -62,6 +62,10 @@ extern mpz_t* gvpvqp;
  * modulusbits is the size of the modulus n, e.g. 1024 or 2048 bit
  * lbits is equal to the share length, e.g. 16 or 32 bit (We use 2*lbits+2 internally)
  * the parameter t is internally fixed to 160, as recommended in the paper
+ * NOTE: this key generation is probabilistic and might create fauly keys!
+ *       Generated keys *MUST* be validated by running multiple trial encryption/decryptions and
+ *       checking the result for correctnes!
+ *       An example can be found in createKeys() in dgk.cpp:559
  */
 void dgk_keygen(unsigned int modulusbits, unsigned int lbits, dgk_pubkey_t** pub, dgk_prvkey_t** prv);
 
