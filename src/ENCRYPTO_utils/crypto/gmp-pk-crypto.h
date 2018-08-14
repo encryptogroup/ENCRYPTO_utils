@@ -85,10 +85,7 @@ public:
 	void import_from_bytes(uint8_t* buf);
 	void sample_fe_from_bytes(uint8_t* buf, uint32_t bytelen);
 	bool eq(fe* a);
-	void print() {
-		std::cout << val << std::endl;
-	}
-	;
+	void print();
 
 private:
 	void init() {
@@ -117,10 +114,8 @@ public:
 	void export_to_bytes(uint8_t* buf, uint32_t field_size);
 	void import_from_bytes(uint8_t* buf, uint32_t field_size);
 	void set_rnd(uint32_t bits);
-	void print() {
-		std::cout << val << std::endl;
-	}
-	;
+	void print();
+
 private:
 	mpz_t val;
 	prime_field* field;

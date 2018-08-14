@@ -17,6 +17,7 @@
  */
 
 #include "gmp-pk-crypto.h"
+#include <iostream>
 
 //Parameters for different security levels
 const char* ifcp1024 =
@@ -81,6 +82,10 @@ void gmp_num::set_mul_mod(num* a, num* b, num* modulus) {
 
 void gmp_num::import_from_bytes(uint8_t* buf, uint32_t field_size_bytes) {
 	mpz_import(val, field_size_bytes, 1, sizeof((buf)[0]), 0, 0, (buf));
+}
+
+void gmp_num::print() {
+	std::cout << val << std::endl;
 }
 
 //export and pad all leading zeros
@@ -169,6 +174,10 @@ void gmp_fe::sample_fe_from_bytes(uint8_t* buf, uint32_t bytelen) {
 }
 bool gmp_fe::eq(fe* a) {
 	return mpz_cmp(val, *fe2mpz(a)) == 0;
+}
+
+void gmp_fe::print() {
+	std::cout << val << std::endl;
 }
 
 num* prime_field::get_num() {

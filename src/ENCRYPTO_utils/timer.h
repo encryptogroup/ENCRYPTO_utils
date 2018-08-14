@@ -55,7 +55,7 @@ static aby_comm m_tRecv[P_LAST - P_FIRST + 1];
 /**
  * Return time difference in milliseconds
  */
-static double getMillies(timespec timestart, timespec timeend) {
+double getMillies(timespec timestart, timespec timeend) {
 	long time1 = (timestart.tv_sec * 1000000) + (timestart.tv_nsec / 1000);
 	long time2 = (timeend.tv_sec * 1000000) + (timeend.tv_nsec / 1000);
 
@@ -67,7 +67,7 @@ static double getMillies(timespec timestart, timespec timeend) {
  * @param msg - a message for debugging
  * @param phase - the ABY phase to measure
  */
-static void StartWatch(const std::string& msg, ABYPHASE phase) {
+void StartWatch(const std::string& msg, ABYPHASE phase) {
 	if (phase < P_FIRST || phase > P_LAST) {
 		std::cerr << "Phase not recognized: " << phase << std::endl;
 		return;
@@ -85,7 +85,7 @@ static void StartWatch(const std::string& msg, ABYPHASE phase) {
  * @param msg - a message for debugging
  * @param phase - the ABY phase to measure
  */
-static void StopWatch(const std::string& msg, ABYPHASE phase) {
+void StopWatch(const std::string& msg, ABYPHASE phase) {
 	if (phase < P_FIRST || phase > P_LAST) {
 		std::cerr << "Phase not recognized: " << phase << std::endl;
 		return;
@@ -105,7 +105,7 @@ static void StopWatch(const std::string& msg, ABYPHASE phase) {
  * @param phase - the ABY phase to measure
  * @param sock - a vector of sockets
  */
-static void StartRecording(const std::string& msg, ABYPHASE phase, std::vector<CSocket*> sock) {
+void StartRecording(const std::string& msg, ABYPHASE phase, std::vector<CSocket*> sock) {
 	StartWatch(msg, phase);
 
 	m_tSend[phase].cbegin = 0;
@@ -123,7 +123,7 @@ static void StartRecording(const std::string& msg, ABYPHASE phase, std::vector<C
  * @param phase - the ABY phase to measure
  * @param sock - a vector of sockets
  */
-static void StopRecording(const std::string& msg, ABYPHASE phase, std::vector<CSocket*> sock) {
+void StopRecording(const std::string& msg, ABYPHASE phase, std::vector<CSocket*> sock) {
 	StopWatch(msg, phase);
 
 	m_tSend[phase].cend = 0;
@@ -138,7 +138,7 @@ static void StopRecording(const std::string& msg, ABYPHASE phase, std::vector<CS
 }
 
 
-static void PrintTimings() {
+void PrintTimings() {
 	std::string unit = " ms";
 	std::cout << "Timings: " << std::endl;
 	std::cout << "Total =\t\t" << m_tTimes[P_TOTAL].timing << unit << std::endl;
@@ -152,7 +152,7 @@ static void PrintTimings() {
 	std::cout << "Online =\t" << m_tTimes[P_ONLINE].timing << unit << std::endl;
 }
 
-static void PrintCommunication() {
+void PrintCommunication() {
 	std::string unit = " bytes";
 	std::cout << "Communication: " << std::endl;
 	std::cout << "Total Sent / Rcv\t" << m_tSend[P_TOTAL].totalcomm << " " << unit << " / " << m_tRecv[P_TOTAL].totalcomm << unit << std::endl;
@@ -163,15 +163,15 @@ static void PrintCommunication() {
 	std::cout << "Online Sent / Rcv\t" << m_tSend[P_ONLINE].totalcomm << " " << unit << " / " << m_tRecv[P_ONLINE].totalcomm << unit << std::endl;
 }
 
-static double GetTimeForPhase(ABYPHASE phase) {
+double GetTimeForPhase(ABYPHASE phase) {
 	return m_tTimes[phase].timing;
 }
 
-static uint64_t GetSentDataForPhase(ABYPHASE phase) {
+uint64_t GetSentDataForPhase(ABYPHASE phase) {
 	return m_tSend[phase].totalcomm;
 }
 
-static uint64_t GetReceivedDataForPhase(ABYPHASE phase) {
+uint64_t GetReceivedDataForPhase(ABYPHASE phase) {
 	return m_tRecv[phase].totalcomm;
 }
 

@@ -24,9 +24,6 @@
 #include <iostream>
 
 BOOL Connect(std::string address, short port, std::vector<CSocket*> &sockets, int id) {
-	int nNumConnections;
-
-	BOOL bFail = FALSE;
 	LONG lTO = CONNECT_TIMEO_MILISEC;
 	//std::cout << "Connecting" << endl;
 	std::ostringstream os;
@@ -34,7 +31,7 @@ BOOL Connect(std::string address, short port, std::vector<CSocket*> &sockets, in
 	std::cout << "Connecting party "<< id <<": " << address << ", " << port << std::endl;
 #endif
 
-	for (int j = 0; j < sockets.size(); j++) {
+	for (size_t j = 0; j < sockets.size(); j++) {
 		for (int i = 0; i < RETRY_CONNECT; i++) {
 			if (!sockets[j]->Socket())
 				goto connect_failure;

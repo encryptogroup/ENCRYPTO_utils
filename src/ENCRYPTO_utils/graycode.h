@@ -108,7 +108,7 @@ void destroy_code(code* codebook);
  * floor(log_2(v))
  */
 
-static inline int log2_floor(int v) {
+inline int log2_floor(int v) {
 	static unsigned const int b[] = { 0x2, 0xC, 0xF0, 0xFF00, 0xFFFF0000 };
 	static unsigned const int S[] = { 1, 2, 4, 8, 16 };
 	unsigned int r = 0;
