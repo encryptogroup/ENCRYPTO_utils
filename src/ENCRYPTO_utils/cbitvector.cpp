@@ -136,7 +136,11 @@ template<class T> void ANDBytes(T* dst, const T* src, const T* lim) {
 	}
 }
 
-}  // namespace
+constexpr BYTE GetArrayBit(const BYTE* p, size_t idx) {
+	return 0 != (p[idx >> 3] & BIT[idx & 0x7]);
+}
+
+} // namespace
 
 
 CBitVector::CBitVector() {
@@ -348,7 +352,7 @@ void CBitVector::SetBit(std::size_t idx, BYTE b) {
 
 BYTE CBitVector::GetBitNoMask(std::size_t idx) const {
 	assert(idx < (m_nByteSize << 3));
-	return !!(m_pBits[idx >> 3] & BIT[idx & 0x7]);
+	return GetArrayBit(m_pBits, idx);
 }
 
 void CBitVector::SetBitNoMask(std::size_t idx, BYTE b) {
@@ -470,7 +474,9 @@ void CBitVector::SetBits(const BYTE* p, std::size_t pos, std::size_t len) {
 //Set bits given an offset on the bits for p which is not necessarily divisible by 8
 void CBitVector::SetBitsPosOffset(const BYTE* p, std::size_t ppos, std::size_t pos, std::size_t len) {
 	for (auto i = pos, j = ppos; j < ppos + len; i++, j++) {
-		m_pBits[i / 8] ^= (((p[j / 8] & (1 << (j % 8))) >> j % 8) << i % 8);
+		BYTE source_bit = GetArrayBit(p, j);
+		SetBitNoMask(i, source_bit);
+
 	}
 }
 
