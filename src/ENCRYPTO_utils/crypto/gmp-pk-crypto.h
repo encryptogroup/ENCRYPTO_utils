@@ -66,7 +66,6 @@ private:
 	mpz_t p;
 	mpz_t g;
 	mpz_t q;
-	gmp_randstate_t rnd_state;
 };
 
 class gmp_fe: public fe {
