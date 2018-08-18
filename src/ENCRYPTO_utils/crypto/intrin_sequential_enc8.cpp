@@ -1,6 +1,6 @@
 /*
  * Copied and modified from Shay Gueron's intrin_sequential_ks4_enc8.cpp
- *
+ */
 /********************************************************************/
 /* Copyright(c) 2014, Intel Corp.                                   */
 /* Developers and authors: Shay Gueron (1) (2)                      */
