@@ -42,7 +42,7 @@ add_library(encrypto_utils
 add_library(ENCRYPTO_utils::encrypto_utils ALIAS encrypto_utils)
 
 target_compile_features(encrypto_utils PUBLIC cxx_std_17)
-target_compile_options(encrypto_utils PRIVATE "-Wall" "-Wextra" "-Weffc++")
+target_compile_options(encrypto_utils PRIVATE "-Wall" "-Wextra")
 
 get_filename_component(PARENT_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 target_include_directories(encrypto_utils
