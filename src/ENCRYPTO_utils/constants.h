@@ -54,7 +54,7 @@ const uint8_t m_vFixedKeyAESSeed[AES_KEY_BYTES] = { 0x00, 0x11, 0x22, 0x33, 0x44
  */
 const uint8_t m_vSeed[AES_KEY_BYTES] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF };
 
-const char* getFieldType(field_type ftype) {
+inline const char* getFieldType(field_type ftype) {
 	switch (ftype) {
 	case P_FIELD: return "P_FIELD";
 	case ECC_FIELD: return "ECC_FIELD";
