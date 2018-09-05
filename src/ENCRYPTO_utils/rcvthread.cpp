@@ -8,7 +8,7 @@
 
 
 RcvThread::RcvThread(CSocket* sock, CLock *glock)
-	:rcvlock(glock),  mysock(sock)
+	:rcvlock(glock),  mysock(sock), listeners()
 {
 	listeners[ADMIN_CHANNEL].inuse = true;
 }
