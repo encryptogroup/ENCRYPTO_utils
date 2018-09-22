@@ -10,8 +10,10 @@
 
 #include "constants.h"
 #include "thread.h"
+#include <array>
 #include <cstdint>
 #include <memory>
+#include <mutex>
 #include <queue>
 
 class CSocket;
