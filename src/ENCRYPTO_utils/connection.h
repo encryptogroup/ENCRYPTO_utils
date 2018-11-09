@@ -28,10 +28,10 @@
 class CSocket;
 
 bool Connect(const std::string& address, uint16_t port,
-		std::vector<std::unique_ptr<CSocket>> &sockets, int id);
+		std::vector<std::unique_ptr<CSocket>> &sockets, uint32_t id);
 bool Listen(const std::string& address, uint16_t port,
 		std::vector<std::vector<std::unique_ptr<CSocket>>> &sockets,
-		int numConnections, int myID);
+		size_t numConnections, uint32_t myID);
 
 std::unique_ptr<CSocket> Connect(const std::string& address, uint16_t port);
 std::unique_ptr<CSocket> Listen(const std::string& address, uint16_t port);

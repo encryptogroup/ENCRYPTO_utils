@@ -20,49 +20,37 @@
 #include "constants.h"
 #include "socket.h"
 #include "utils.h"
+#include <cassert>
 #include <iostream>
+#include <limits>
 
 bool Connect(const std::string& address, uint16_t port,
-		std::vector<std::unique_ptr<CSocket>> &sockets, int id) {
+		std::vector<std::unique_ptr<CSocket>> &sockets, uint32_t id) {
 #ifndef BATCH
 	std::cout << "Connecting party "<< id <<": " << address << ", " << port << std::endl;
 #endif
-
+	assert(sockets.size() <= std::numeric_limits<uint32_t>::max());
 	for (size_t j = 0; j < sockets.size(); j++) {
-		for (int i = 0; i < RETRY_CONNECT; i++) {
-			if (sockets[j]->Connect(address, port)) {
-				// send pid when connected
-				sockets[j]->Send(&id, sizeof(int));
-				sockets[j]->Send(&j, sizeof(int));
-#ifndef BATCH
-				std::cout << " (" << id << ") (" << j << ") connected" << std::endl;
-#endif
-				if (j == sockets.size() - 1) {
-					return true;
-				} else {
-					break;
-				}
-			}
-			SleepMiliSec(10);
-			sockets[j]->Close();
+		sockets[j] = Connect(address, port);
+		if (sockets[j]) {
+			// handshake
+			sockets[j]->Send(&id, sizeof(id));
+			uint32_t index = static_cast<uint32_t>(j);
+			sockets[j]->Send(&index, sizeof(index));
+		}
+		else {
+			return false;
 		}
 	}
-
-	std::cerr << " (" << id << ") connection failed due to timeout!" << std::endl;
-
-	return false;
+	return true;
 }
 
 bool Listen(const std::string& address, uint16_t port,
-		std::vector<std::vector<std::unique_ptr<CSocket>>> &sockets, int
-		numConnections, int myID) {
-	// everybody except the last thread listenes
+		std::vector<std::vector<std::unique_ptr<CSocket>>> &sockets,
+		size_t numConnections, uint32_t myID) {
 
 	auto listen_socket = std::make_unique<CSocket>();
 
-#ifndef BATCH
-	std::cout << "Listening: " << address << ":" << port << std::endl;
-#endif
 	if (!listen_socket->Bind(address, port)) {
 		std::cerr << "Error: a socket could not be bound\n";
 		return false;
@@ -72,7 +60,7 @@ bool Listen(const std::string& address, uint16_t port,
 		return false;
 	}
 
-	for (int i = 0; i < numConnections; i++)
+	for (size_t i = 0; i < numConnections; i++)
 	{
 		auto sock = listen_socket->Accept();
 		if (!sock) {
@@ -80,26 +68,22 @@ bool Listen(const std::string& address, uint16_t port,
 			return false;
 		}
 		// receive initial pid when connected
-		UINT nID;
-		UINT conID; //a mix of threadID and role - depends on the application
-		sock->Receive(&nID, sizeof(int));
-		sock->Receive(&conID, sizeof(int));
+		uint32_t nID;
+		uint32_t conID; //a mix of threadID and role - depends on the application
+		sock->Receive(&nID, sizeof(nID));
+		sock->Receive(&conID, sizeof(conID));
 
 		if (nID >= sockets.size()) //Not more than two parties currently allowed
 				{
 			sock->Close();
-			i--;
+			i--;  // try same index again
 			continue;
 		}
 		if (conID >= sockets[myID].size()) {
 			sock->Close();
-			i--;
+			i--;  // try same index again
 			continue;
 		}
-
-#ifndef BATCH
-		std::cout << " (" << conID <<") (" << conID << ") connection accepted" std::endl;
-#endif
 		// locate the socket appropriately
 		sockets[nID][conID] = std::move(sock);
 	}
