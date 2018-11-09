@@ -20,32 +20,28 @@
 #include "constants.h"
 #include "socket.h"
 #include "utils.h"
-#include <sstream>
 #include <iostream>
 
-BOOL Connect(std::string address, short port, std::vector<CSocket*> &sockets, int id) {
-	LONG lTO = CONNECT_TIMEO_MILISEC;
-	//std::cout << "Connecting" << endl;
-	std::ostringstream os;
+bool Connect(std::string address, short port,
+		std::vector<std::unique_ptr<CSocket>> &sockets, int id) {
 #ifndef BATCH
 	std::cout << "Connecting party "<< id <<": " << address << ", " << port << std::endl;
 #endif
 
 	for (size_t j = 0; j < sockets.size(); j++) {
 		for (int i = 0; i < RETRY_CONNECT; i++) {
-			if (!sockets[j]->Socket())
-				goto connect_failure;
-			if (sockets[j]->Connect(address, port, lTO)) {
+			if (!sockets[j]->Socket()){
+				return false;
+			}
+			if (sockets[j]->Connect(address, port)) {
 				// send pid when connected
 				sockets[j]->Send(&id, sizeof(int));
 				sockets[j]->Send(&j, sizeof(int));
 #ifndef BATCH
-				os.str("");
-				os << " (" << id << ") (" << j << ") connected" << std::endl;
-				std::cout << os.str() << std::flush;
+				std::cout << " (" << id << ") (" << j << ") connected" << std::endl;
 #endif
 				if (j == sockets.size() - 1) {
-					return TRUE;
+					return true;
 				} else {
 					break;
 				}
@@ -55,76 +51,66 @@ BOOL Connect(std::string address, short port, std::vector<CSocket*> &sockets, in
 		}
 	}
 
-	connect_failure:
+	std::cerr << " (" << id << ") connection failed due to timeout!" << std::endl;
 
-	os.str("");
-	os << " (" << id << ") connection failed due to timeout!\n";
-	std::cout << os.str() << std::flush;
-	return FALSE;
-
+	return false;
 }
 
-BOOL Listen(std::string address, short port, std::vector<std::vector<CSocket*> > &sockets, int numConnections, int myID) {
+bool Listen(std::string address, short port,
+		std::vector<std::vector<std::unique_ptr<CSocket>>> &sockets, int
+		numConnections, int myID) {
 	// everybody except the last thread listenes
-	std::ostringstream os;
 
 #ifndef BATCH
 	std::cout << "Listening: " << address << ":" << port << std::endl;
 #endif
 	if (!sockets[myID][0]->Socket()) {
 		std::cerr << "Error: a socket could not be created \n";
-		goto listen_failure;
+		return false;
 	}
 	if (!sockets[myID][0]->Bind(port, address)) {
 		std::cerr << "Error: a socket could not be bound\n";
-		goto listen_failure;
+		return false;
 	}
 	if (!sockets[myID][0]->Listen()) {
 		std::cerr << "Error: could not listen on the socket \n";
-		goto listen_failure;
+		return false;
 	}
 
-	for (int i = 0; i < numConnections; i++) //twice the actual number, due to double sockets for OT
-			{
-		CSocket sock;
-		if (!sockets[myID][0]->Accept(sock)) {
+	for (int i = 0; i < numConnections; i++)
+	{
+		std::unique_ptr<CSocket> sock = std::make_unique<CSocket>();
+		if (!sockets[myID][0]->Accept(*sock)) {
 			std::cerr << "Error: could not accept connection\n";
-			goto listen_failure;
+			return false;
 		}
 		// receive initial pid when connected
 		UINT nID;
 		UINT conID; //a mix of threadID and role - depends on the application
-		sock.Receive(&nID, sizeof(int));
-		sock.Receive(&conID, sizeof(int));
+		sock->Receive(&nID, sizeof(int));
+		sock->Receive(&conID, sizeof(int));
 
 		if (nID >= sockets.size()) //Not more than two parties currently allowed
 				{
-			sock.Close();
+			sock->Close();
 			i--;
 			continue;
 		}
 		if (conID >= sockets[myID].size()) {
-			sock.Close();
+			sock->Close();
 			i--;
 			continue;
 		}
 
 #ifndef BATCH
-		os.str("");
-		os << " (" << conID <<") (" << conID << ") connection accepted\n";
-
-		std::cout << os.str() << std::flush;
+		std::cout << " (" << conID <<") (" << conID << ") connection accepted" std::endl;
 #endif
 		// locate the socket appropriately
-		sockets[nID][conID]->AttachFrom(sock);
-		sock.Detach();
+		sockets[nID][conID] = std::move(sock);
 	}
 
 #ifndef BATCH
 	std::cout << "Listening finished" << std::endl;
 #endif
-	return TRUE;
-
-	listen_failure: std::cout << "Listen failed" << std::endl;
-	return FALSE;
+	return true;
 }
