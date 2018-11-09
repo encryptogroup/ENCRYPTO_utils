@@ -35,6 +35,12 @@ using boost::asio::ip::tcp;
 
 
 struct CSocket::CSocketImpl {
+	CSocketImpl(std::shared_ptr<boost::asio::io_context> io_context,
+			tcp::socket&& socket)
+		: io_context(io_context), socket(std::move(socket)),
+		acceptor(*io_context)
+	{
+	}
 	CSocketImpl()
 		: io_context(std::make_shared<boost::asio::io_context>()),
 		socket(*io_context), acceptor(*io_context)
@@ -171,17 +177,17 @@ bool CSocket::Listen(int backlog) {
 	return true;
 }
 
-bool CSocket::Accept(CSocket& sock) {
+std::unique_ptr<CSocket> CSocket::Accept() {
 	boost::system::error_code ec;
 	auto socket = impl_->acceptor.accept(ec);
 	if (ec) {
 		std::cerr << "accept failed: " << ec.message() << "\n";
 		std::cerr << "endpoint: " << impl_->acceptor.local_endpoint() << "\n";
-		return false;
+		return nullptr;
 	}
-	sock.impl_->io_context = impl_->io_context;
-	sock.impl_->socket = std::move(socket);
-	return true;
+	auto csocket = std::make_unique<CSocket>();
+	csocket->impl_ = std::make_unique<CSocketImpl>(impl_->io_context, std::move(socket));
+	return csocket;
 }
 
 bool CSocket::Connect(const std::string& host, uint16_t port) {

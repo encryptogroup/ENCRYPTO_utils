@@ -79,8 +79,8 @@ bool Listen(std::string address, short port,
 
 	for (int i = 0; i < numConnections; i++)
 	{
-		std::unique_ptr<CSocket> sock = std::make_unique<CSocket>();
-		if (!sockets[myID][0]->Accept(*sock)) {
+		auto sock = sockets[myID][0]->Accept();
+		if (!sock) {
 			std::cerr << "Error: could not accept connection\n";
 			return false;
 		}

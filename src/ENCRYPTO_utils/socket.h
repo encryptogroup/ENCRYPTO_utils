@@ -47,7 +47,7 @@ public:
 
 	bool Listen(int nQLen = 5);
 
-	bool Accept(CSocket& sock);
+	std::unique_ptr<CSocket> Accept();
 
 	bool Connect(const std::string& host, uint16_t port);
 
