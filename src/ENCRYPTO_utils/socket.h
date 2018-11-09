@@ -27,7 +27,7 @@
 
 class CSocket {
 public:
-	CSocket();
+	CSocket(bool verbose=false);
 	~CSocket();
 
 	uint64_t getSndCnt() const;
@@ -61,6 +61,7 @@ private:
 	uint64_t send_count_, recv_count_;
 	mutable std::mutex m_nSndCount_mutex_;
 	mutable std::mutex m_nRcvCount_mutex_;
+	bool verbose_;
 };
 
 #endif //SOCKET_H__BY_SGCHOI

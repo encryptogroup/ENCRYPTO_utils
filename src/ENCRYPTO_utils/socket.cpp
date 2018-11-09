@@ -50,8 +50,9 @@ struct CSocket::CSocketImpl {
 	tcp::acceptor acceptor;
 };
 
-CSocket::CSocket()
-	: impl_(std::make_unique<CSocketImpl>()), send_count_(0), recv_count_(0)
+CSocket::CSocket(bool verbose)
+	: impl_(std::make_unique<CSocketImpl>()), send_count_(0), recv_count_(0),
+	verbose_(verbose)
 {}
 
 CSocket::~CSocket() {
@@ -112,8 +113,10 @@ bool CSocket::Bind(const std::string& ip, uint16_t port) {
 		// Try to parse given address
 		address = boost::asio::ip::make_address(ip, ec);
 		if (ec) {
-			std::cerr << "make_address failed: " << ec.message() << "\n";
-			std::cerr << "with argument: " << ip << "\n";
+			if (verbose_) {
+				std::cerr << "make_address failed: " << ec.message() << "\n";
+				std::cerr << "with argument: " << ip << "\n";
+			}
 			return false;
 		}
 	}
@@ -122,8 +125,10 @@ bool CSocket::Bind(const std::string& ip, uint16_t port) {
 
 	impl_->acceptor.open(endpoint.protocol(), ec);
 	if (ec) {
-		std::cerr << "acceptor socket open failed: " << ec.message() << "\n";
-		std::cerr << "endpoint: " << endpoint << "\n";
+		if (verbose_) {
+			std::cerr << "acceptor socket open failed: " << ec.message() << "\n";
+			std::cerr << "endpoint: " << endpoint << "\n";
+		}
 		return false;
 	}
 
@@ -132,8 +137,10 @@ bool CSocket::Bind(const std::string& ip, uint16_t port) {
 		boost::asio::ip::v6_only opt(false);
 		impl_->acceptor.set_option(opt, ec);
 		if (ec) {
-			std::cerr << "acceptor disable option IPPROTO_IPV6/IP_V6ONLY failed: "
-				<< ec.message() << "\n";
+			if (verbose_) {
+				std::cerr << "acceptor disable option IPPROTO_IPV6/IP_V6ONLY failed: "
+					<< ec.message() << "\n";
+			}
 			return false;
 		}
 	}
@@ -143,21 +150,27 @@ bool CSocket::Bind(const std::string& ip, uint16_t port) {
 	tcp::no_delay opt_tcp_no_delay(true);
 	impl_->acceptor.set_option(opt_reuse_addr, ec);
 	if (ec) {
-		std::cerr << "acceptor set option SO_REUSEADDR failed: " << ec.message() << "\n";
-		std::cerr << "endpoint: " << endpoint << "\n";
+		if (verbose_) {
+			std::cerr << "acceptor set option SO_REUSEADDR failed: " << ec.message() << "\n";
+			std::cerr << "endpoint: " << endpoint << "\n";
+		}
 		return false;
 	}
 	impl_->acceptor.set_option(opt_tcp_no_delay, ec);
 	if (ec) {
-		std::cerr << "acceptor set option TCP_NODELAY failed: " << ec.message() << "\n";
-		std::cerr << "endpoint: " << endpoint << "\n";
+		if (verbose_) {
+			std::cerr << "acceptor set option TCP_NODELAY failed: " << ec.message() << "\n";
+			std::cerr << "endpoint: " << endpoint << "\n";
+		}
 		return false;
 	}
 
 	impl_->acceptor.bind(endpoint, ec);
 	if (ec) {
-		std::cerr << "bind failed: " << ec.message() << "\n";
-		std::cerr << "endpoint: " << endpoint << "\n";
+		if (verbose_) {
+			std::cerr << "bind failed: " << ec.message() << "\n";
+			std::cerr << "endpoint: " << endpoint << "\n";
+		}
 		return false;
 	}
 	return true;
@@ -167,8 +180,10 @@ bool CSocket::Listen(int backlog) {
 	boost::system::error_code ec;
 	impl_->acceptor.listen(backlog);
 	if (ec) {
-		std::cerr << "listen failed: " << ec.message() << "\n";
-		std::cerr << "endpoint: " << impl_->acceptor.local_endpoint() << "\n";
+		if (verbose_) {
+			std::cerr << "listen failed: " << ec.message() << "\n";
+			std::cerr << "endpoint: " << impl_->acceptor.local_endpoint() << "\n";
+		}
 		return false;
 	}
 	return true;
@@ -178,8 +193,10 @@ std::unique_ptr<CSocket> CSocket::Accept() {
 	boost::system::error_code ec;
 	auto socket = impl_->acceptor.accept(ec);
 	if (ec) {
-		std::cerr << "accept failed: " << ec.message() << "\n";
-		std::cerr << "endpoint: " << impl_->acceptor.local_endpoint() << "\n";
+		if (verbose_) {
+			std::cerr << "accept failed: " << ec.message() << "\n";
+			std::cerr << "endpoint: " << impl_->acceptor.local_endpoint() << "\n";
+		}
 		return nullptr;
 	}
 	auto csocket = std::make_unique<CSocket>();
@@ -193,20 +210,26 @@ bool CSocket::Connect(const std::string& host, uint16_t port) {
 
 	auto endpoints = resolver.resolve(host, std::to_string(port), ec);
 	if (ec) {
-		std::cerr << "resolve failed: " << ec.message() << "\n";
+		if (verbose_) {
+			std::cerr << "resolve failed: " << ec.message() << "\n";
+		}
 		return false;
 	}
 
 	boost::asio::connect(impl_->socket, endpoints, ec);
 	if (ec) {
-		std::cerr << "connect failed: " << ec.message() << "\n";
+		if (verbose_) {
+			std::cerr << "connect failed: " << ec.message() << "\n";
+		}
 		return false;
 	}
 
 	tcp::no_delay opt_tcp_no_delay(true);
 	impl_->socket.set_option(opt_tcp_no_delay, ec);
 	if (ec) {
-		std::cerr << "socket set option TCP_NODELAY failed: " << ec.message() << "\n";
+		if (verbose_) {
+			std::cerr << "socket set option TCP_NODELAY failed: " << ec.message() << "\n";
+		}
 		return false;
 	}
 	return true;
@@ -216,7 +239,7 @@ size_t CSocket::Receive(void* buf, size_t bytes) {
 	boost::system::error_code ec;
 	auto bytes_transferred =
 		boost::asio::read(impl_->socket, boost::asio::buffer(buf, bytes), ec);
-	if (ec) {
+	if (ec && verbose_) {
 		std::cerr << "read failed: " << ec.message() << "\n";
 	}
 	return bytes_transferred;
@@ -226,7 +249,7 @@ size_t CSocket::Send(const void* buf, size_t bytes) {
 	boost::system::error_code ec;
 	auto bytes_transferred =
 		boost::asio::write(impl_->socket, boost::asio::buffer(buf, bytes), ec);
-	if (ec) {
+	if (ec && verbose_) {
 		std::cerr << "write failed: " << ec.message() << "\n";
 	}
 	return bytes_transferred;
