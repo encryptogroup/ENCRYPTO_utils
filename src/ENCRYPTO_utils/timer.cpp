@@ -70,7 +70,8 @@ void StopWatch(const std::string& msg, ABYPHASE phase) {
 #endif
 }
 
-void StartRecording(const std::string& msg, ABYPHASE phase, std::vector<CSocket*> sock) {
+void StartRecording(const std::string& msg, ABYPHASE phase,
+		const std::vector<std::unique_ptr<CSocket>>& sock) {
 	StartWatch(msg, phase);
 
 	m_tSend[phase].cbegin = 0;
@@ -81,7 +82,8 @@ void StartRecording(const std::string& msg, ABYPHASE phase, std::vector<CSocket*
 	}
 }
 
-void StopRecording(const std::string& msg, ABYPHASE phase, std::vector<CSocket*> sock) {
+void StopRecording(const std::string& msg, ABYPHASE phase,
+		const std::vector<std::unique_ptr<CSocket>>& sock) {
 	StopWatch(msg, phase);
 
 	m_tSend[phase].cend = 0;

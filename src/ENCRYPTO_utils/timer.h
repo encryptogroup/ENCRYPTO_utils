@@ -20,6 +20,7 @@
 #define __TIMER_H__
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -74,7 +75,8 @@ void StopWatch(const std::string& msg, ABYPHASE phase);
  * @param phase - the ABY phase to measure
  * @param sock - a vector of sockets
  */
-void StartRecording(const std::string& msg, ABYPHASE phase, std::vector<CSocket*> sock);
+void StartRecording(const std::string& msg, ABYPHASE phase,
+		const std::vector<std::unique_ptr<CSocket>>& sock);
 
 /**
  * Stop measuring both runtime and communication
@@ -83,7 +85,8 @@ void StartRecording(const std::string& msg, ABYPHASE phase, std::vector<CSocket*
  * @param phase - the ABY phase to measure
  * @param sock - a vector of sockets
  */
-void StopRecording(const std::string& msg, ABYPHASE phase, std::vector<CSocket*> sock);
+void StopRecording(const std::string& msg, ABYPHASE phase,
+		const std::vector<std::unique_ptr<CSocket>>& sock);
 
 void PrintTimings();
 
