@@ -80,14 +80,6 @@ void CSocket::Close() {
 	impl_->socket.close();
 }
 
-void CSocket::AttachFrom(CSocket& s) {
-	// TODO
-}
-
-void CSocket::Detach() {
-	// TODO
-}
-
 std::string CSocket::GetIP() const {
 	boost::system::error_code ec;
 	auto endpoint = impl_->socket.local_endpoint(ec);

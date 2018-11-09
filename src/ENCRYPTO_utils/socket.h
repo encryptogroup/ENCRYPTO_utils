@@ -39,10 +39,6 @@ public:
 
 	void Close();
 
-	void AttachFrom(CSocket& s);
-
-	void Detach();
-
 	std::string GetIP() const;
 
 	uint16_t GetPort() const;
