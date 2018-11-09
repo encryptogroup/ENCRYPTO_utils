@@ -53,11 +53,11 @@ public:
 
 	bool Accept(CSocket& sock);
 
-	bool Connect(const std::string& host, uint16_t port, long lTOSMilisec = -1);
+	bool Connect(const std::string& host, uint16_t port);
 
-	size_t Receive(void* buf, size_t bytes, int nFlags = 0);
+	size_t Receive(void* buf, size_t bytes);
 
-	size_t Send(const void* buf, size_t bytes, int nFlags = 0);
+	size_t Send(const void* buf, size_t bytes);
 
 private:
 	struct CSocketImpl;

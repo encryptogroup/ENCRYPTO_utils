@@ -192,7 +192,7 @@ bool CSocket::Accept(CSocket& sock) {
 	return true;
 }
 
-bool CSocket::Connect(const std::string& host, uint16_t port, long) {
+bool CSocket::Connect(const std::string& host, uint16_t port) {
 	boost::system::error_code ec;
 	tcp::resolver resolver(*impl_->io_context);
 
@@ -217,8 +217,7 @@ bool CSocket::Connect(const std::string& host, uint16_t port, long) {
 	return true;
 }
 
-size_t CSocket::Receive(void* buf, size_t bytes, int nFlags) {
-	// TODO: handle flags?
+size_t CSocket::Receive(void* buf, size_t bytes) {
 	boost::system::error_code ec;
 	auto bytes_transferred =
 		boost::asio::read(impl_->socket, boost::asio::buffer(buf, bytes), ec);
@@ -228,8 +227,7 @@ size_t CSocket::Receive(void* buf, size_t bytes, int nFlags) {
 	return bytes_transferred;
 }
 
-size_t CSocket::Send(const void* buf, size_t bytes, int nFlags) {
-	// TODO: handle flags?
+size_t CSocket::Send(const void* buf, size_t bytes) {
 	boost::system::error_code ec;
 	auto bytes_transferred =
 		boost::asio::write(impl_->socket, boost::asio::buffer(buf, bytes), ec);
