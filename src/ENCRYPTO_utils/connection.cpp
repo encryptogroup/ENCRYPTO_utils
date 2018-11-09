@@ -22,7 +22,7 @@
 #include "utils.h"
 #include <iostream>
 
-bool Connect(std::string address, short port,
+bool Connect(const std::string& address, uint16_t port,
 		std::vector<std::unique_ptr<CSocket>> &sockets, int id) {
 #ifndef BATCH
 	std::cout << "Connecting party "<< id <<": " << address << ", " << port << std::endl;
@@ -53,11 +53,11 @@ bool Connect(std::string address, short port,
 	return false;
 }
 
-bool Listen(std::string address, short port,
+bool Listen(const std::string& address, uint16_t port,
 		std::vector<std::vector<std::unique_ptr<CSocket>>> &sockets, int
 		numConnections, int myID) {
 	// everybody except the last thread listenes
-	
+
 	auto listen_socket = std::make_unique<CSocket>();
 
 #ifndef BATCH

@@ -27,9 +27,9 @@
 // forward declaration
 class CSocket;
 
-bool Connect(std::string address, short port,
+bool Connect(const std::string& address, uint16_t port,
 		std::vector<std::unique_ptr<CSocket>> &sockets, int id);
-bool Listen(std::string address, short port,
+bool Listen(const std::string& address, uint16_t port,
 		std::vector<std::vector<std::unique_ptr<CSocket>>> &sockets,
 		int numConnections, int myID);
 
