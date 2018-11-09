@@ -109,3 +109,25 @@ bool Listen(const std::string& address, uint16_t port,
 #endif
 	return true;
 }
+
+std::unique_ptr<CSocket> Connect(const std::string& address, uint16_t port) {
+	auto socket = std::make_unique<CSocket>();
+	for (int i = 0; i < RETRY_CONNECT; i++) {
+		if (socket->Connect(address, port))
+			return socket;
+		SleepMiliSec(10);
+	}
+	std::cerr << "Connect failed due to timeout!\n";
+	return nullptr;
+}
+
+std::unique_ptr<CSocket> Listen(const std::string& address, uint16_t port) {
+	auto listen_socket = std::make_unique<CSocket>();
+	if (!listen_socket->Bind(address, port)) {
+		return nullptr;
+	}
+	if (!listen_socket->Listen()) {
+		return nullptr;
+	}
+	return listen_socket->Accept();
+}

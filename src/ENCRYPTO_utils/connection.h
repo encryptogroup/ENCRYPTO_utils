@@ -33,4 +33,7 @@ bool Listen(const std::string& address, uint16_t port,
 		std::vector<std::vector<std::unique_ptr<CSocket>>> &sockets,
 		int numConnections, int myID);
 
+std::unique_ptr<CSocket> Connect(const std::string& address, uint16_t port);
+std::unique_ptr<CSocket> Listen(const std::string& address, uint16_t port);
+
 #endif
