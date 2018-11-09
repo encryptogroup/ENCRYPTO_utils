@@ -20,31 +20,9 @@
 #define __SOCKET_H__BY_SGCHOI
 
 #include <cstdint>
+#include <memory>
 #include <mutex>
 #include <string>
-
-// moved here from typedefs.h
-#ifdef WIN32
-#include <WinSock2.h>
-#include <windows.h>
-
-typedef unsigned short USHORT;
-typedef int socklen_t;
-#pragma comment(lib, "wsock32.lib")
-
-#else //WIN32
-//
-// #include <sys/types.h>
-// #include <sys/socket.h>
-// #include <netdb.h>
-// #include <arpa/inet.h>
-// #include <unistd.h>
-// #include <netinet/tcp.h>
-//
-typedef int SOCKET;
-#define INVALID_SOCKET -1
-
-#endif //WIN32
 
 
 class CSocket {
@@ -69,21 +47,22 @@ public:
 
 	uint16_t GetPort() const;
 
-	bool Bind(uint16_t nPort = 0, std::string ip = "");
+	bool Bind(uint16_t nPort = 0, const std::string& ip = "");
 
 	bool Listen(int nQLen = 5);
 
 	bool Accept(CSocket& sock);
 
-	bool Connect(std::string ip, uint16_t port, long lTOSMilisec = -1);
+	bool Connect(const std::string& host, uint16_t port, long lTOSMilisec = -1);
 
-	uint64_t Receive(void* pBuf, uint64_t nLen, int nFlags = 0);
+	size_t Receive(void* buf, size_t bytes, int nFlags = 0);
 
-	int Send(const void* pBuf, uint64_t nLen, int nFlags = 0);
+	size_t Send(const void* buf, size_t bytes, int nFlags = 0);
 
 private:
-	SOCKET m_hSock;
-	uint64_t m_nSndCount, m_nRcvCount;
+	struct CSocketImpl;
+	std::unique_ptr<CSocketImpl> impl_;
+	uint64_t send_count_, recv_count_;
 	mutable std::mutex m_nSndCount_mutex_;
 	mutable std::mutex m_nRcvCount_mutex_;
 };

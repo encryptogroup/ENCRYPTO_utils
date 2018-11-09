@@ -19,6 +19,7 @@ endif()
 find_package(GMP REQUIRED)
 find_package(GMPXX REQUIRED)
 find_package(OpenSSL REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system thread)
 
 
 add_library(encrypto_utils
@@ -59,6 +60,7 @@ target_include_directories(encrypto_utils
 
 target_link_libraries(encrypto_utils
     PRIVATE MIRACL::miracl
+    PRIVATE Boost::system Boost::thread
     PUBLIC GMP::GMP GMP::GMPXX
     PUBLIC OpenSSL::Crypto
 )
