@@ -76,9 +76,6 @@ void CSocket::ResetRcvCnt() {
 }
 
 bool CSocket::Socket() {
-	send_count_ = 0;
-	recv_count_ = 0;
-	Close();
 	return true;
 }
 

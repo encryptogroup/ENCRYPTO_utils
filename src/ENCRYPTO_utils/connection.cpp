@@ -30,9 +30,6 @@ bool Connect(std::string address, short port,
 
 	for (size_t j = 0; j < sockets.size(); j++) {
 		for (int i = 0; i < RETRY_CONNECT; i++) {
-			if (!sockets[j]->Socket()){
-				return false;
-			}
 			if (sockets[j]->Connect(address, port)) {
 				// send pid when connected
 				sockets[j]->Send(&id, sizeof(int));
@@ -60,26 +57,24 @@ bool Listen(std::string address, short port,
 		std::vector<std::vector<std::unique_ptr<CSocket>>> &sockets, int
 		numConnections, int myID) {
 	// everybody except the last thread listenes
+	
+	auto listen_socket = std::make_unique<CSocket>();
 
 #ifndef BATCH
 	std::cout << "Listening: " << address << ":" << port << std::endl;
 #endif
-	if (!sockets[myID][0]->Socket()) {
-		std::cerr << "Error: a socket could not be created \n";
-		return false;
-	}
-	if (!sockets[myID][0]->Bind(port, address)) {
+	if (!listen_socket->Bind(port, address)) {
 		std::cerr << "Error: a socket could not be bound\n";
 		return false;
 	}
-	if (!sockets[myID][0]->Listen()) {
+	if (!listen_socket->Listen()) {
 		std::cerr << "Error: could not listen on the socket \n";
 		return false;
 	}
 
 	for (int i = 0; i < numConnections; i++)
 	{
-		auto sock = sockets[myID][0]->Accept();
+		auto sock = listen_socket->Accept();
 		if (!sock) {
 			std::cerr << "Error: could not accept connection\n";
 			return false;
