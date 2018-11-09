@@ -43,7 +43,7 @@ public:
 
 	uint16_t GetPort() const;
 
-	bool Bind(uint16_t nPort = 0, const std::string& ip = "");
+	bool Bind(const std::string& address = "", uint16_t port = 0);
 
 	bool Listen(int nQLen = 5);
 

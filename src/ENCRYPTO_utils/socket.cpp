@@ -101,7 +101,7 @@ uint16_t CSocket::GetPort() const {
 	return endpoint.port();
 }
 
-bool CSocket::Bind(uint16_t port, const std::string& ip) {
+bool CSocket::Bind(const std::string& ip, uint16_t port) {
 	boost::system::error_code ec;
 	boost::asio::ip::address address;
 

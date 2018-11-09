@@ -63,7 +63,7 @@ bool Listen(const std::string& address, uint16_t port,
 #ifndef BATCH
 	std::cout << "Listening: " << address << ":" << port << std::endl;
 #endif
-	if (!listen_socket->Bind(port, address)) {
+	if (!listen_socket->Bind(address, port)) {
 		std::cerr << "Error: a socket could not be bound\n";
 		return false;
 	}
