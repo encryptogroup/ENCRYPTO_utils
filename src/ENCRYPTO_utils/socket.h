@@ -59,8 +59,8 @@ private:
 	struct CSocketImpl;
 	std::unique_ptr<CSocketImpl> impl_;
 	uint64_t send_count_, recv_count_;
-	mutable std::mutex m_nSndCount_mutex_;
-	mutable std::mutex m_nRcvCount_mutex_;
+	mutable std::mutex send_count_mutex_;
+	mutable std::mutex recv_count_mutex_;
 	bool verbose_;
 };
 

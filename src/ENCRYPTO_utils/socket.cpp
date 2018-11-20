@@ -60,19 +60,19 @@ CSocket::~CSocket() {
 }
 
 uint64_t CSocket::getSndCnt() const {
-	std::lock_guard<std::mutex> lock(m_nSndCount_mutex_);
+	std::lock_guard<std::mutex> lock(send_count_mutex_);
 	return send_count_;
 }
 uint64_t CSocket::getRcvCnt() const {
-	std::lock_guard<std::mutex> lock(m_nRcvCount_mutex_);
+	std::lock_guard<std::mutex> lock(recv_count_mutex_);
 	return recv_count_;
 }
 void CSocket::ResetSndCnt() {
-	std::lock_guard<std::mutex> lock(m_nSndCount_mutex_);
+	std::lock_guard<std::mutex> lock(send_count_mutex_);
 	send_count_ = 0;
 }
 void CSocket::ResetRcvCnt() {
-	std::lock_guard<std::mutex> lock(m_nRcvCount_mutex_);
+	std::lock_guard<std::mutex> lock(recv_count_mutex_);
 	recv_count_ = 0;
 }
 
@@ -242,6 +242,10 @@ size_t CSocket::Receive(void* buf, size_t bytes) {
 	if (ec && verbose_) {
 		std::cerr << "read failed: " << ec.message() << "\n";
 	}
+	{
+		std::lock_guard<std::mutex> lock(recv_count_mutex_);
+		recv_count_ += bytes_transferred;
+	}
 	return bytes_transferred;
 }
 
@@ -251,6 +255,10 @@ size_t CSocket::Send(const void* buf, size_t bytes) {
 		boost::asio::write(impl_->socket, boost::asio::buffer(buf, bytes), ec);
 	if (ec && verbose_) {
 		std::cerr << "write failed: " << ec.message() << "\n";
+	}
+	{
+		std::lock_guard<std::mutex> lock(send_count_mutex_);
+		send_count_ += bytes_transferred;
 	}
 	return bytes_transferred;
 }
