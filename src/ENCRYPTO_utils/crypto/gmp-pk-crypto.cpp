@@ -105,7 +105,7 @@ num* prime_field::get_rnd_num(uint32_t bitlen) {
 	return ret;
 }
 
-fe* prime_field::get_rnd_fe(uint32_t bitlen) {
+fe* prime_field::get_rnd_fe() {
 	mpz_t val;
 	mpz_init(val);
 	aby_prng(val, mpz_sizeinbase(q, 2) + secparam.ifcbits);
