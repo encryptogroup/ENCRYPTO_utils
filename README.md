@@ -15,3 +15,9 @@ If desired, the build can be installed to the chosen `DCMAKE_INSTALL_PREFIX`.
 In case MIRACL was built in the previous step, it will also be installed.
 
     $ make install  # if desired
+
+## Tests
+
+Optional tests can be built by setting `-DENCRYPTO_UTILS_BUILD_TESTS=On` when running `cmake` (see above). The test binary will be located in `test/` inside the build directory.
+
+
