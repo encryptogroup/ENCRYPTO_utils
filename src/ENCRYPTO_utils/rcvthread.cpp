@@ -46,7 +46,7 @@ void RcvThread::remove_listener(uint8_t channelid) {
 		listeners[channelid].inuse = false;
 
 #ifdef DEBUG_RECEIVE_THREAD
-		cout << "Unsetting channel " << (uint32_t) channelid << endl;
+		std::cout << "Unsetting channel " << (uint32_t) channelid << std::endl;
 #endif
 	} else {
 		listeners[channelid].forward_notify_fin = true;
@@ -59,7 +59,7 @@ std::queue<rcv_ctx*>*
 RcvThread::add_listener(uint8_t channelid, CEvent* rcv_event, CEvent* fin_event) {
 	rcvlock->Lock();
 #ifdef DEBUG_RECEIVE_THREAD
-	cout << "Registering listener on channel " << (uint32_t) channelid << endl;
+	std::cout << "Registering listener on channel " << (uint32_t) channelid << std::endl;
 #endif
 
 	if(listeners[channelid].inuse || channelid == ADMIN_CHANNEL) {
@@ -74,7 +74,7 @@ RcvThread::add_listener(uint8_t channelid, CEvent* rcv_event, CEvent* fin_event)
 	listeners[channelid].inuse = true;
 //		assert(listeners[channelid].rcv_buf->empty());
 
-	//cout << "Successfully registered on channel " << (uint32_t) channelid << endl;
+	//std::cout << "Successfully registered on channel " << (uint32_t) channelid << std::endl;
 
 	rcvlock->Unlock();
 
@@ -96,15 +96,15 @@ void RcvThread::ThreadMain() {
 	uint64_t rcvbytelen;
 	uint64_t rcv_len;
 	while(true) {
-		//cout << "Starting to receive data" << endl;
+		//std::cout << "Starting to receive data" << std::endl;
 		rcv_len = 0;
 		rcv_len += mysock->Receive(&channelid, sizeof(uint8_t));
 		rcv_len += mysock->Receive(&rcvbytelen, sizeof(uint64_t));
 
 		if(rcv_len > 0) {
 #ifdef DEBUG_RECEIVE_THREAD
-			cout << "Received value on channel " << (uint32_t) channelid << " with " << rcvbytelen <<
-					" bytes length (" << rcv_len << ")" << endl;
+			std::cout << "Received value on channel " << (uint32_t) channelid << " with " << rcvbytelen <<
+					" bytes length (" << rcv_len << ")" << std::endl;
 #endif
 
 			if(channelid == ADMIN_CHANNEL) {
@@ -112,9 +112,9 @@ void RcvThread::ThreadMain() {
 				mysock->Receive(tmprcvbuf.data(), rcvbytelen);
 
 				//TODO: Right now finish, can be used for other maintenance tasks
-				//cout << "Got message on Admin channel, shutting down" << endl;
+				//std::cout << "Got message on Admin channel, shutting down" << std::endl;
 #ifdef DEBUG_RECEIVE_THREAD
-				cout << "Receiver thread is being killed" << endl;
+				std::cout << "Receiver thread is being killed" << std::endl;
 #endif
 				return;//continue;
 			}
