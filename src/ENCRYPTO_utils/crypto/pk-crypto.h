@@ -30,7 +30,7 @@ class brickexp;
 
 class pk_crypto {
 public:
-	pk_crypto(seclvl sp, uint8_t* seed) {
+	pk_crypto(seclvl sp) {
 		fe_bytelen = 0;
 		order = 0;
 		secparam = sp;
@@ -40,7 +40,7 @@ public:
 	virtual num* get_num() = 0;
 	virtual num* get_rnd_num(uint32_t bitlen = 0) = 0;
 	virtual fe* get_fe() = 0;
-	virtual fe* get_rnd_fe(uint32_t bitlen) = 0;
+	virtual fe* get_rnd_fe() = 0;
 	virtual fe* get_generator() = 0;
 	virtual fe* get_rnd_generator() = 0;
 	virtual uint32_t num_byte_size() = 0;

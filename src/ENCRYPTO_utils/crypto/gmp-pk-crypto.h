@@ -34,7 +34,7 @@ class gmp_brickexp;
 class prime_field: public pk_crypto {
 public:
 	prime_field(seclvl sp, uint8_t* seed) :
-			pk_crypto(sp, seed) {
+			pk_crypto(sp) {
 		init(sp, seed);
 	}
 	;
@@ -43,7 +43,7 @@ public:
 	num* get_num();
 	num* get_rnd_num(uint32_t bitlen = 0);
 	fe* get_fe();
-	fe* get_rnd_fe(uint32_t bitlen);
+	fe* get_rnd_fe();
 	fe* get_generator();
 	fe* get_rnd_generator();
 	num* get_order();

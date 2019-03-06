@@ -41,7 +41,7 @@ void ecc_field::init(seclvl sp, uint8_t* seed) {
 	fparams = (ecc_fparams*) malloc(sizeof(ecc_fparams));
 	secparam = sp;
 
-	char *ecp = NULL, *ecb = NULL, *ecx = ecx163, *ecy = ecy163, *ecr = ecr163;
+	char *ecx = ecx163, *ecy = ecy163, *ecr = ecr163;
 	fparams->BB = new Big();
 	fparams->BA = new Big();
 	fparams->BP = new Big();
@@ -148,7 +148,7 @@ fe* ecc_field::get_fe() {
 	return new ecc_fe(this);
 }
 
-fe* ecc_field::get_rnd_fe(uint32_t bitlen) {
+fe* ecc_field::get_rnd_fe() {
 	return sample_random_point();
 }
 

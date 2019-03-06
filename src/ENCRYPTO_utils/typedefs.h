@@ -19,30 +19,21 @@
 #ifndef __TYPEDEFS_H__
 #define __TYPEDEFS_H__
 
-typedef struct SECURITYLEVELS {
-	int statbits;
-	int symbits;
-	int ifcbits;
-	int eccpfbits;
-	int ecckcbits;
-} seclvl;
+#include <cstdint>
 
 typedef int BOOL;
-typedef long LONG;
-
 typedef unsigned char BYTE;
-typedef unsigned short USHORT;
-typedef unsigned int UINT;
-typedef unsigned long ULONG;
-typedef BYTE UINT8_T;
-typedef USHORT UINT16_T;
-typedef UINT UINT32_T;
-typedef unsigned long long UINT64_T;
-typedef long long SINT64_T;
 
-typedef ULONG DWORD;
-typedef UINT64_T UGATE_T;
-typedef UINT64_T REGISTER_SIZE;
+typedef uint64_t UGATE_T;
+typedef uint64_t REGISTER_SIZE;
+
+typedef struct SECURITYLEVELS {
+	uint32_t statbits;
+	uint32_t symbits;
+	uint32_t ifcbits;
+	uint32_t eccpfbits;
+	uint32_t ecckcbits;
+} seclvl;
 
 #define GATE_T_BITS (sizeof(UGATE_T) * 8)
 
@@ -94,4 +85,3 @@ T sub(T a, T b, T m) {
 
 
 #endif //__TYPEDEFS_H__
-
