@@ -17,8 +17,6 @@
  */
 
 #include "codewords.h"
-#include <cstdint>
-#include <cstdlib>
 
 const uint32_t CODE_MATRIX[m_nCodewords][m_nCWIntlen] = { \
 		{0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000}, \
@@ -285,11 +283,11 @@ void readCodeWords(uint64_t** codewords) {
 			codewords[i][j] = 0;
 			for(k = 0; k < sizeof(uint64_t) / sizeof(uint32_t); k++) {
 				codewords[i][j] |= (((uint64_t) CODE_MATRIX[i][j*sizeof(uint64_t) / sizeof(uint32_t)+k]) << (k * 8 * sizeof(uint32_t)));
-				//cout << (hex) << CODE_MATRIX[i][j*2+k];
+				//std::cout << (std::hex) << CODE_MATRIX[i][j*2+k];
 			}
-		//	cout << (hex) << codewords[i][j] << ", ";
+		//	std::cout << (std::hex) << codewords[i][j] << ", ";
 		}
-		//cout << endl;
+		//std::cout << std::endl;
 	}
 }
 

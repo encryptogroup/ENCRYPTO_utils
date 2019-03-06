@@ -248,7 +248,7 @@ void ecc_fe::sample_fe_from_bytes(uint8_t* buf, uint32_t bytelen) {
 		}
 		incr(bigtmp.getbig(), 1, bigtmp.getbig());
 	}
-	cerr << "Error while sampling point, exiting!" << endl;
+	std::cerr << "Error while sampling point, exiting!" << std::endl;
 	exit(0);
 }
 bool ecc_fe::eq(fe* a) {
