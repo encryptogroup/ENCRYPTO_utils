@@ -24,8 +24,9 @@ before_install:
 script:
   - mkdir build_debug
   - cd build_debug
-  - CC=/usr/bin/gcc-8 CXX=/usr/bin/g++-8 cmake .. -DCMAKE_BUILD_TYPE=Debug
+  - CC=/usr/bin/gcc-8 CXX=/usr/bin/g++-8 cmake .. -DCMAKE_BUILD_TYPE=Debug -DENCRYPTO_UTILS_BUILD_TESTS=On
   - make
+  - ./test/test
 
 notifications:
   - email: false

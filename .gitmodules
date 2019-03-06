@@ -3,3 +3,6 @@
 	url = https://github.com/encryptogroup/MIRACL.git
 	branch = feature-cmake
 	ignore = dirty
+[submodule "extern/googletest"]
+	path = extern/googletest
+	url = https://github.com/google/googletest.git
