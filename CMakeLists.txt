@@ -1,5 +1,9 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.12)
 project(ENCRYPTO_utils LANGUAGES CXX)
+
+if (CMAKE_COMPILER_IS_GNUCXX AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
+    message(FATAL_ERROR "ENCRYPTO_utils require at least g++-8")
+endif()
 
 option(ENCRYPTO_UTILS_BUILD_TESTS "Build tests" Off)
 
@@ -21,7 +25,7 @@ endif()
 find_package(GMP REQUIRED)
 find_package(GMPXX REQUIRED)
 find_package(OpenSSL REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system thread)
+find_package(Boost 1.66.0 REQUIRED COMPONENTS system thread)
 
 add_subdirectory(src)
 
