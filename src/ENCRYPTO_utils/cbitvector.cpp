@@ -182,9 +182,11 @@ void CBitVector::FillRand(std::size_t bits, crypto* crypt) {
 }
 
 void CBitVector::CreateExact(std::size_t bits) {
-	if (bits == 0)
+	if (bits == 0){
 		bits = AES_BITS;
+	}
 
+	// if memory was previously allocated: free it	
 	if (m_nByteSize > 0) {
 		free(m_pBits);
 	}
@@ -199,22 +201,8 @@ void CBitVector::CreateExact(std::size_t bits) {
 }
 
 void CBitVector::Create(std::size_t bits) {
-	if (bits == 0)
-		bits = AES_BITS;
-
-	if (m_nByteSize > 0) {
-		free(m_pBits);
-	}
-
-	//TODO: check if padding to aes bits is still necessary, otherwise pad to bytes
-	std::size_t size = ceil_divide(bits, AES_BITS);
-	m_nByteSize = size * AES_BYTES;
-	m_pBits = (BYTE*) calloc(m_nByteSize, sizeof(BYTE));
-	assert(m_pBits != NULL);
-
-	m_nElementLength = 1;
-	m_nNumElements = m_nByteSize;
-	m_nNumElementsDimB = 1;
+	//TODO: check if padding to AES_BITS is still necessary as default
+	CreateExact(ceil_divide(bits, AES_BITS) * AES_BITS);
 }
 
 void CBitVector::CreateBytes(std::size_t bytes) {

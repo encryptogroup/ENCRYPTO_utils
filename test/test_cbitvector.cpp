@@ -2,6 +2,14 @@
 #include "ENCRYPTO_utils/cbitvector.h"
 
 
+TEST(TestCBitVector, Create){
+	
+	// check padding to AES bit size bis in Create()
+	CBitVector v2;
+	v2.Create(129);
+	ASSERT_EQ(v2.GetSize(), 32);
+}
+
 TEST(TestCBitVector, SetBitsPosOffset) {
 
 	auto read_bits = [] (const CBitVector& v) {
@@ -34,3 +42,4 @@ TEST(TestCBitVector, SetBitsPosOffset) {
 
 	ASSERT_EQ(read_bits(v), 0b0000001111010101);
 }
+
