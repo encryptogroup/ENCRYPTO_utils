@@ -181,6 +181,23 @@ void CBitVector::FillRand(std::size_t bits, crypto* crypt) {
 	crypt->gen_rnd(m_pBits, ceil_divide(bits, 8));
 }
 
+void CBitVector::CreateExact(std::size_t bits) {
+	if (bits == 0)
+		bits = AES_BITS;
+
+	if (m_nByteSize > 0) {
+		free(m_pBits);
+	}
+
+	m_nByteSize = ceil_divide(bits, 8);
+	m_pBits = (BYTE*) calloc(m_nByteSize, sizeof(BYTE));
+	assert(m_pBits != NULL);
+
+	m_nElementLength = 1;
+	m_nNumElements = m_nByteSize;
+	m_nNumElementsDimB = 1;
+}
+
 void CBitVector::Create(std::size_t bits) {
 	if (bits == 0)
 		bits = AES_BITS;
