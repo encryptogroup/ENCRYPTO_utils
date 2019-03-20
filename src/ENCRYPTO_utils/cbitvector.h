@@ -83,6 +83,14 @@ public:
 
 
 	/* Create in bits and bytes */
+	
+	/**
+		This method is used to create the CBitVector with the provided bits. The method creates a bit vector of exactly ceil_divide(bits) size.
+		For example, if bit size provided is 3 after this method is called it will be 8 bits = 1 byte.
+
+		\param  bits	 - It is the number of bits which will be used to allocate the CBitVector with.
+	*/
+	void CreateExact(std::size_t bits);
 
 	/**
 		This method is used to create the CBitVector with the provided bits. The method creates a bit vector with a size close to AES Bitsize.
