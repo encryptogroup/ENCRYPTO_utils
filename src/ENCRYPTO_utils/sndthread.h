@@ -29,8 +29,11 @@ public:
 
 	void add_snd_task_start_len(uint8_t channelid, uint64_t sndbytes, uint8_t* sndbuf, uint64_t startid, uint64_t len);
 
+	void add_event_snd_task_start_len(CEvent* eventcaller, uint8_t channelid, uint64_t sndbytes, uint8_t* sndbuf, uint64_t startid, uint64_t len);
 
 	void add_snd_task(uint8_t channelid, uint64_t sndbytes, uint8_t* sndbuf);
+
+	void add_event_snd_task(CEvent* eventcaller, uint8_t channelid, uint64_t sndbytes, uint8_t* sndbuf);
 
 	void signal_end(uint8_t channelid);
 
@@ -42,6 +45,7 @@ private:
 	struct snd_task {
 		uint8_t channelid;
 		std::vector<uint8_t> snd_buf;
+		CEvent* eventcaller;
 	};
 
 	void push_task(std::unique_ptr<snd_task> task);
