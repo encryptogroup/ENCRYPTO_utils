@@ -27,9 +27,23 @@ void channel::send(uint8_t* buf, uint64_t nbytes) {
 	assert(m_bSndAlive);
 	m_cSnder->add_snd_task(m_bChannelID, nbytes, buf);
 }
+
+
+void channel::blocking_send(CEvent* eventcaller, uint8_t* buf, uint64_t nbytes) {
+	assert(m_bSndAlive);
+	m_cSnder->add_event_snd_task(eventcaller, m_bChannelID, nbytes, buf);
+	eventcaller->Wait();
+}
+
 void channel::send_id_len(uint8_t* buf, uint64_t nbytes, uint64_t id, uint64_t len) {
 	assert(m_bSndAlive);
 	m_cSnder->add_snd_task_start_len(m_bChannelID, nbytes, buf, id, len);
+}
+
+void channel::blocking_send_id_len(CEvent* eventcaller, uint8_t* buf, uint64_t nbytes, uint64_t id, uint64_t len) {
+	assert(m_bSndAlive);
+	m_cSnder->add_event_snd_task_start_len(eventcaller, m_bChannelID, nbytes, buf, id, len);
+	eventcaller->Wait();
 }
 
 //buf needs to be freed, data contains the payload

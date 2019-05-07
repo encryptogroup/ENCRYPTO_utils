@@ -35,10 +35,11 @@ void SndThread::push_task(std::unique_ptr<snd_task> task)
 	send->Set();
 }
 
-void SndThread::add_snd_task_start_len(uint8_t channelid, uint64_t sndbytes, uint8_t* sndbuf, uint64_t startid, uint64_t len) {
+void SndThread::add_event_snd_task_start_len(CEvent* eventcaller, uint8_t channelid, uint64_t sndbytes, uint8_t* sndbuf, uint64_t startid, uint64_t len) {
 	assert(channelid != ADMIN_CHANNEL);
 	auto task = std::make_unique<snd_task>();
 	task->channelid = channelid;
+	task->eventcaller = eventcaller;
 	size_t bytelen = sndbytes + 2 * sizeof(uint64_t);
 	task->snd_buf.resize(bytelen);
 	memcpy(task->snd_buf.data(), &startid, sizeof(uint64_t));
@@ -49,17 +50,28 @@ void SndThread::add_snd_task_start_len(uint8_t channelid, uint64_t sndbytes, uin
 	push_task(std::move(task));
 }
 
+void SndThread::add_snd_task_start_len(uint8_t channelid, uint64_t sndbytes, uint8_t* sndbuf, uint64_t startid, uint64_t len) {
+	//Call the method blocking but since callback is nullptr nobody gets notified, other functionallity is equal
+	add_event_snd_task_start_len(nullptr, channelid, sndbytes, sndbuf, startid, len);
+}
 
-void SndThread::add_snd_task(uint8_t channelid, uint64_t sndbytes, uint8_t* sndbuf) {
+
+void SndThread::add_event_snd_task(CEvent* eventcaller, uint8_t channelid, uint64_t sndbytes, uint8_t* sndbuf) {
 	assert(channelid != ADMIN_CHANNEL);
 	auto task = std::make_unique<snd_task>();
 	task->channelid = channelid;
+	task->eventcaller = eventcaller;
 	task->snd_buf.resize(sndbytes);
 	memcpy(task->snd_buf.data(), sndbuf, sndbytes);
 
 	push_task(std::move(task));
 	//std::cout << "Event set" << std::endl;
 
+}
+
+void SndThread::add_snd_task(uint8_t channelid, uint64_t sndbytes, uint8_t* sndbuf) {
+	//Call the method blocking but since callback is nullptr nobody gets notified, other functionallity is equal
+	add_event_snd_task(nullptr, channelid, sndbytes, sndbuf);
 }
 
 void SndThread::signal_end(uint8_t channelid) {
@@ -117,6 +129,9 @@ void SndThread::ThreadMain() {
 			if(channelid == ADMIN_CHANNEL) {
 				//delete sndlock;
 				run = false;
+			}
+			if(task->eventcaller != nullptr) {
+				task->eventcaller->Set();
 			}
 		}
 	}

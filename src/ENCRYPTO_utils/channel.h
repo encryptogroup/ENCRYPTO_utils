@@ -26,7 +26,12 @@ public:
 	~channel();
 
 	void send(uint8_t* buf, uint64_t nbytes);
+
+	void blocking_send(CEvent* eventcaller, uint8_t* buf, uint64_t nbytes);
+
 	void send_id_len(uint8_t* buf, uint64_t nbytes, uint64_t id, uint64_t len);
+
+	void blocking_send_id_len(CEvent* eventcaller, uint8_t* buf, uint64_t nbytes, uint64_t id, uint64_t len);
 
 	//buf needs to be freed, data contains the payload
 	uint8_t* blocking_receive_id_len(uint8_t** data, uint64_t* id, uint64_t* len);
