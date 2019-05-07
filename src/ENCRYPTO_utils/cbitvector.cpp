@@ -94,13 +94,13 @@ constexpr BYTE SET_BIT_C[2][8] = { { 0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80 
 
 const BYTE SELECT_BIT_POSITIONS[9] = { 0x00, 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF };
 
-#ifdef MACHINE_SIZE_32
+#if (__WORDSIZE==32)
 constexpr REGISTER_SIZE TRANSPOSITION_MASKS[6] =
 {	0x55555555, 0x33333333, 0x0F0F0F0F, 0x00FF00FF, 0x0000FFFF};
 constexpr REGISTER_SIZE TRANSPOSITION_MASKS_INV[6] =
 {	0xAAAAAAAA, 0xCCCCCCCC, 0xF0F0F0F0, 0xFF00FF00, 0xFFFF0000};
 #else
-#ifdef MACHINE_SIZE_64
+#if (__WORDSIZE==64)
 /** Transposition mask used for Eklund Bit Matrix Transposition.*/
 constexpr REGISTER_SIZE TRANSPOSITION_MASKS[6] = { 0x5555555555555555, 0x3333333333333333, 0x0F0F0F0F0F0F0F0F, 0x00FF00FF00FF00FF, 0x0000FFFF0000FFFF, 0x00000000FFFFFFFF };
 constexpr REGISTER_SIZE TRANSPOSITION_MASKS_INV[6] = { 0xAAAAAAAAAAAAAAAA, 0xCCCCCCCCCCCCCCCC, 0xF0F0F0F0F0F0F0F0, 0xFF00FF00FF00FF00, 0xFFFF0000FFFF0000, 0xFFFFFFFF00000000 };
@@ -186,7 +186,7 @@ void CBitVector::CreateExact(std::size_t bits) {
 		bits = AES_BITS;
 	}
 
-	// if memory was previously allocated: free it	
+	// if memory was previously allocated: free it
 	if (m_nByteSize > 0) {
 		free(m_pBits);
 	}
@@ -851,4 +851,3 @@ void CBitVector::EklundhBitTranspose(std::size_t rows, std::size_t columns) {
 		free(tempvec);
 	}
 }
-

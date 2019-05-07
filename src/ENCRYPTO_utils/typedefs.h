@@ -56,15 +56,6 @@ typedef REGISTER_SIZE REGSIZE;
 #define	SERVER_ID	0
 #define	CLIENT_ID	1
 
-#define MAX_INT (~0)
-#if (MAX_INT == 0xFFFFFFFF)
-#define MACHINE_SIZE_32
-#elif (MAX_INT == 0xFFFFFFFFFFFFFFFF)
-#define MACHINE_SIZE_64
-#else
-#define MACHINE_SIZE_16
-#endif
-
 template<class T>
 T rem(T a, T b) {
 	return ((a) > 0) ? (a) % (b) : (a) % (b) + ((b) > 0 ? (b) : (b) * -1);
@@ -81,7 +72,5 @@ T sub(T a, T b, T m) {
 #endif
 #define ZERO_BYTE 0
 #define MAX_BYTE 0xFF
-#define MAX_UINT MAX_INT
-
 
 #endif //__TYPEDEFS_H__
