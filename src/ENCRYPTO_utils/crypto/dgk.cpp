@@ -422,7 +422,7 @@ void dgk_storekey(unsigned int modulusbits, unsigned int lbits, dgk_pubkey_t* pu
 
 	char smod[5];
 	char slbit[4];
-	char name[40] = "dkg_key_";
+	char name[40] = "dgk_key_";
 	const char* div = "_";
 	const char* ext = ".bin";
 
@@ -463,7 +463,7 @@ void dgk_readkey(unsigned int modulusbits, unsigned int lbits, dgk_pubkey_t** pu
 
 	char smod[5];
 	char slbit[4];
-	char name[40] = "dkg_key_";
+	char name[40] = "dgk_key_";
 	const char* div = "_";
 	const char* ext = ".bin";
 
@@ -568,7 +568,7 @@ void createKeys() {
 		for (unsigned int l = 8; l <= 64; l *= 2) {
 
 			// choose either keygen or readkey
-//			dgk_keygen(n, l, &pub, &prv); //uncomment to acutally create keys
+			// dgk_keygen(n, l, &pub, &prv); //uncomment to acutally create keys
 			dgk_readkey(n, l, &pub, &prv); //only read from file
 
 			int no_error = 1;
@@ -639,13 +639,13 @@ void createKeys() {
 						//					gmp_printf("vp %Zd\n", prv->vp);
 						//					gmp_printf("vq %Zd\n", prv->vq);
 						printf(".");
-						break;
 						no_error = 0;
+						break;
 					}
 				}
 			}
 			if (no_error) {
-				dgk_storekey(n, l, pub, prv);
+				// dgk_storekey(n, l, pub, prv);
 			} else {
 				if (l > 4) { // re-do last iteration
 					l /= 2;
@@ -663,8 +663,8 @@ void test_encdec() {
 
 	mpz_inits(a0, a1, b0, b1, c0, c1, r, d, a0c, b0c, rc, tmp0, tmp1, NULL);
 
-	unsigned int l = 8;
-	unsigned int nbit = 1024;
+	unsigned int l = 32;
+	unsigned int nbit = 3072;
 
 	//choose either keygen or readkey
 	//dgk_keygen(nbit, l, &pub, &prv);
@@ -701,11 +701,11 @@ void test_sharing() {
 
 	mpz_inits(a0, a1, b0, b1, c0, c1, r, d, a0c, b0c, rc, tmp0, tmp1, NULL);
 
-	unsigned int l = 8;
-	unsigned int nbit = 1024;
+	unsigned int l = 32;
+	unsigned int nbit = 3072;
 
 	//choose either keygen or readkey
-	//dgk_keygen(nbit, l, &pub, &prv);
+	// dgk_keygen(nbit, l, &pub, &prv);
 	dgk_readkey(nbit, l, &pub, &prv);
 
 	// choose random a and b shares, l bits long
@@ -794,15 +794,16 @@ void test_sharing() {
 
 /**
  * uncomment the following main for direct testing
+ * g++ dgk.cpp ../utils.cpp ../powmod.cpp -lgmp -O3 -g0 -o dgk
  */
-//int main(){
-//	srand (time(NULL)^clock());
-//
-////	createKeys();
-////	test_encdec();
-//	test_sharing();
-//	printf("END");
-//
-//	return 0;
-//}
-//
+// #include <time.h>
+// int main(){
+// 	srand (time(NULL)^clock());
+
+// 	// createKeys();
+// 	test_encdec();
+// 	test_sharing();
+// 	printf("DGK END.\n");
+
+// 	return 0;
+// }

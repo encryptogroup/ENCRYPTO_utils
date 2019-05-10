@@ -72,13 +72,13 @@ uint32_t aby_rand() {
 /**
  * returns a random mpz_t with bitlen len generated from dev/urandom
  */
-void aby_prng(mpz_t rnd, mp_bitcnt_t len) {
-	size_t byte_count = ceil_divide(len, 8);
+void aby_prng(mpz_t rnd, mp_bitcnt_t bitlen) {
+	size_t byte_count = ceil_divide(bitlen, 8);
 	char * data;
 
 	int furandom = open("/dev/urandom", O_RDONLY);
 	if (furandom < 0) {
-		std::cerr << "Error in opening /dev/urandom: utils.h:aby_prng()" << std::endl;
+		std::cerr << "Error in opening /dev/urandom: utils.cpp:aby_prng()" << std::endl;
 		exit(1);
 	} else {
 		data = (char*) malloc(sizeof(*data) * byte_count);
@@ -86,7 +86,7 @@ void aby_prng(mpz_t rnd, mp_bitcnt_t len) {
 		while (len < byte_count) {
 			ssize_t result = read(furandom, data + len, byte_count - len);
 			if (result < 0) {
-				std::cerr << "Error in generating random number: utils.h:aby_prng()" << std::endl;
+				std::cerr << "Error in generating random number: utils.cpp:aby_prng()" << std::endl;
 				exit(1);
 			}
 			len += result;
@@ -94,6 +94,14 @@ void aby_prng(mpz_t rnd, mp_bitcnt_t len) {
 		close(furandom);
 	}
 
-	mpz_import(rnd, byte_count, 1, sizeof(*data), 0, 0, data);
-	free(data);
+    mpz_import(rnd, byte_count, 1, sizeof(*data), 0, 0, data);
+
+    //set MSBs to zero, if we are not working on full bytes
+    if (bitlen % 8) {
+      for (uint8_t i = 0; i < 8 - bitlen % 8; ++i) {
+        mpz_clrbit(rnd, byte_count * 8 - i - 1);
+      }
+    }
+
+    free(data);
 }
