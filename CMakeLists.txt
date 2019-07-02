@@ -40,9 +40,15 @@ set(STLIB on CACHE BOOL "Relic static library")
 add_subdirectory(extern/relic)
 
 #looks dirty, but since the relic library is poorly exported let's treat it as an external library
+if(CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+    set(RELIC_LIB_DIR "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/librelic_s.a")
+else()
+    set(RELIC_LIB_DIR "${CMAKE_CURRENT_BINARY_DIR}/extern/relic/lib/librelic_s.a")
+endif()
+
 add_library(RELIC::relic STATIC IMPORTED)
 set_target_properties(RELIC::relic PROPERTIES
-    IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/extern/relic/lib/librelic_s.a"
+    IMPORTED_LOCATION ${RELIC_LIB_DIR}
     INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/extern/relic/include;${CMAKE_CURRENT_SOURCE_DIR}/extern/relic/include/low;${CMAKE_CURRENT_BINARY_DIR}/extern/relic/include"
 )
 
