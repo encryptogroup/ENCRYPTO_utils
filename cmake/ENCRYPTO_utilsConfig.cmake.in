@@ -4,7 +4,6 @@ list(APPEND CMAKE_MODULE_PATH "${ENCRYPTO_utils_CMAKE_DIR}")
 
 include(CMakeFindDependencyMacro)
 
-find_dependency(MIRACL)
 find_dependency(GMP)
 find_dependency(GMPXX)
 find_dependency(OpenSSL)

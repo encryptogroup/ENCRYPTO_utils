@@ -3,16 +3,16 @@ Crypto and networking utils used for ABY and OTExtension
 
 ## Build
 
-This library can be built in the following way. If
-[MIRACL](https://github.com/miracl/MIRACL) cannot be found on the system, it is
-used via the git submodule `extern/MIRACL` and automatically compiled.
+This library can be built in the following way. If the
+[Relic](https://github.com/relic-toolkit/relic) sources cannot be found on the system, it is
+used via the git submodule `extern/relic` and automatically compiled statically.
 
     $ mkdir build && cd build
     $ cmake .. -DCMAKE_INSTALL_PREFIX=/path/to/installation
     $ make -j $(nproc)
 
 If desired, the build can be installed to the chosen `DCMAKE_INSTALL_PREFIX`.
-In case MIRACL was built in the previous step, it will also be installed.
+In case Relic was built in the previous step, it will also be installed.
 
     $ make install  # if desired
 

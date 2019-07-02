@@ -11,7 +11,6 @@ add_library(encrypto_utils
     ${PROJECT_NAME}/crypto/gmp-pk-crypto.cpp
     ${PROJECT_NAME}/crypto/intrin_sequential_enc8.cpp
     ${PROJECT_NAME}/crypto/TedKrovetzAesNiWrapperC.cpp
-    ${PROJECT_NAME}/graycode.cpp
     ${PROJECT_NAME}/parse_options.cpp
     ${PROJECT_NAME}/powmod.cpp
     ${PROJECT_NAME}/rcvthread.cpp
@@ -25,6 +24,8 @@ add_library(ENCRYPTO_utils::encrypto_utils ALIAS encrypto_utils)
 
 target_compile_features(encrypto_utils PUBLIC cxx_std_17)
 target_compile_options(encrypto_utils PRIVATE "-Wall" "-Wextra")
+#Maybe it is better to create a ecc-pk-crypti.h.in file, since the ecclvl is only needed there
+target_compile_definitions(encrypto_utils PUBLIC ECCLVL=${ecclvl})
 
 target_include_directories(encrypto_utils
     PUBLIC
@@ -34,12 +35,15 @@ target_include_directories(encrypto_utils
 
 
 target_link_libraries(encrypto_utils
-    PRIVATE MIRACL::miracl
-    PRIVATE Boost::system Boost::thread
-    PUBLIC GMP::GMP GMP::GMPXX
-    PUBLIC OpenSSL::Crypto
+    PRIVATE
+        Boost::system
+        Boost::thread
+    PUBLIC
+        GMP::GMP
+        GMP::GMPXX
+        OpenSSL::Crypto
+        RELIC::relic
 )
-
 
 install(TARGETS encrypto_utils
         EXPORT "${PROJECT_NAME}Targets"
