@@ -25,6 +25,8 @@ add_library(ENCRYPTO_utils::encrypto_utils ALIAS encrypto_utils)
 
 target_compile_features(encrypto_utils PUBLIC cxx_std_17)
 target_compile_options(encrypto_utils PRIVATE "-Wall" "-Wextra")
+#Maybe it is better to create a ecc-pk-crypti.h.in file, since the ecclvl is only needed there
+target_compile_definitions(encrypto_utils PUBLIC ECCLVL=${ecclvl})
 
 target_include_directories(encrypto_utils
     PUBLIC
@@ -34,12 +36,15 @@ target_include_directories(encrypto_utils
 
 
 target_link_libraries(encrypto_utils
-    PRIVATE MIRACL::miracl
-    PRIVATE Boost::system Boost::thread
-    PUBLIC GMP::GMP GMP::GMPXX
-    PUBLIC OpenSSL::Crypto
+    PRIVATE
+        Boost::system
+        Boost::thread
+    PUBLIC
+        GMP::GMP
+        GMP::GMPXX
+        OpenSSL::Crypto
+        RELIC::relic
 )
-
 
 install(TARGETS encrypto_utils
         EXPORT "${PROJECT_NAME}Targets"

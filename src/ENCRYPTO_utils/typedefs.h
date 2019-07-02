@@ -31,9 +31,10 @@ typedef struct SECURITYLEVELS {
 	uint32_t statbits;
 	uint32_t symbits;
 	uint32_t ifcbits;
-	uint32_t eccpfbits;
-	uint32_t ecckcbits;
+	//ECCLVL depends on CMAKE settings
 } seclvl;
+
+//ECCLVL depends on CMAKE settings
 
 #define GATE_T_BITS (sizeof(UGATE_T) * 8)
 

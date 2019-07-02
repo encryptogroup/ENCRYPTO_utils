@@ -20,42 +20,28 @@
 #define ECC_PK_CRYPTO_H_
 
 #include "pk-crypto.h"
+
+extern "C"
+{
+	#include <relic.h>
+}
+
 #include <memory>
-
-// forward declarations
-class Big;
-class EC2;
-
-#define fe2ec2(fieldele) (((ecc_fe*) (fieldele))->get_val())
-#define num2Big(number) (((ecc_num*) (number))->get_val())
-
-//how many repetitions of random point samplings should be performed
-#define MAXMSGSAMPLE 256
-
-struct ecc_fparams {
-	Big* BA;
-	Big* BB;
-	Big* X;
-	Big* Y;
-	Big* BP;
-	int32_t m;
-	int32_t a;
-	int32_t b;
-	int32_t c;
-	uint32_t secparam;
-};
+#include <vector>
+#include <mutex>
 
 class ecc_num;
 class ecc_fe;
 class ecc_brickexp;
+
+static std::mutex relic_mutex;
 
 class ecc_field: public pk_crypto {
 public:
 	ecc_field(seclvl sp, uint8_t* seed) :
 			pk_crypto(sp) {
 		init(sp, seed);
-	}
-	;
+	};
 	~ecc_field();
 
 	num* get_num();
@@ -67,32 +53,26 @@ public:
 	uint32_t get_size();
 	//fe* sample_fe_from_bytes(uint8_t* buf, uint32_t bytelen);
 	num* get_order();
-	uint32_t num_byte_size() {
-		return ceil_divide(secparam.ecckcbits, 8);
-	}
-	uint32_t get_field_size() {
-		return secparam.ecckcbits;
-	}
-	;
+	uint32_t num_byte_size();
+	uint32_t get_field_size();
 
 	brickexp* get_brick(fe* gen);
-	ecc_fparams* get_params() {
-		return fparams;
-	}
-	;
+
+	ctx_t* get_context();
 
 protected:
 	void init(seclvl sp, uint8_t* seed);
 private:
 	fe* sample_random_point();
-	ecc_fparams* fparams;
+	ecc_fe* generator;
+	ctx_t* context;
 };
 
 class ecc_num: public num {
-	//This is a Big
+
 public:
 	ecc_num(ecc_field* fld);
-	ecc_num(ecc_field* fld, Big* src);
+	ecc_num(ecc_field* fld, bn_t src);
 	~ecc_num();
 	void set(num* src);
 	void set_si(int32_t src);
@@ -102,25 +82,28 @@ public:
 	void mod(num* mod);
 	void set_mul_mod(num* a, num* b, num* modulus) ;
 
-	Big* get_val();
+	void get_val(bn_t res);
 
 	void export_to_bytes(uint8_t* buf, uint32_t field_size_bytes);
 	void import_from_bytes(uint8_t* buf, uint32_t field_size_bytes);
-	void set_rnd(uint32_t bits);
+	//void set_rnd(uint32_t bits); Seems useless since not implemented
 	void print();
 
 private:
-	Big* val;
+	void shallow_copy(bn_t to, bn_t from);
+
+	bn_t val;
 	ecc_field* field;
+	ctx_t* context;
 };
 
 class ecc_fe: public fe {
 public:
 	ecc_fe(ecc_field* fld);
-	ecc_fe(ecc_field* fld, EC2* src);
+	ecc_fe(ecc_field* fld, eb_t src);
 	~ecc_fe();
 	void set(fe* src);
-	EC2* get_val();
+	void get_val(eb_t res);
 	void set_mul(fe* a, fe* b);
 
 	void set_pow(fe* b, num* e);
@@ -135,22 +118,24 @@ public:
 
 private:
 	void init();
-	EC2* val;
+	void shallow_copy(eb_t to, eb_t from);
+	eb_t val;
 	ecc_field* field;
+	ctx_t* context;
 };
 
 class ecc_brickexp: public brickexp {
 public:
-	ecc_brickexp(fe* point, ecc_fparams* fparams);
+	ecc_brickexp(fe* generator, ecc_field* field);
 	~ecc_brickexp();
 
 	void pow(fe* res, num* e);
 private:
-	struct ecc_brickexp_impl;	// used to hide MIRACL's ebrick2 type in the implementation
-	std::unique_ptr<ecc_brickexp_impl> impl;
+	uint32_t eb_pre_size;
+	eb_t* eb_table;
+	ecc_field* field;
+	ctx_t* context;
 };
 
-void point_to_byte(uint8_t* pBufIdx, uint32_t field_size_bytes, EC2* to_export);
-void byte_to_point(EC2* to_export, uint32_t field_size_bytes, uint8_t* pBufIdx);
 
 #endif /* ECC_PK_CRYPTO_H_ */
