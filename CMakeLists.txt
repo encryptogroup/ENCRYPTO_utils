@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 project(ENCRYPTO_utils LANGUAGES CXX)
 
 if (CMAKE_COMPILER_IS_GNUCXX AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
-    message(FATAL_ERROR "ENCRYPTO_utils require at least g++-8")
+	message(FATAL_ERROR "ENCRYPTO_utils require at least g++-8")
 endif()
 
 option(ENCRYPTO_UTILS_BUILD_TESTS "Build tests" Off)
@@ -13,6 +13,20 @@ find_package(GMP REQUIRED)
 find_package(GMPXX REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(Boost 1.66.0 REQUIRED COMPONENTS system thread)
+
+
+find_package(RELIC QUIET)
+if(RELIC_FOUND)
+	message(STATUS "Found RELIC")
+elseif(NOT RELIC_FOUND AND NOT TARGET RELIC::relic)
+	message("RELIC was not found: add RELIC subdirectory")
+	if(NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/relic/CMakeLists.txt")
+		find_package(Git REQUIRED)
+		message("initialize Git submodule: extern/relic")
+		execute_process(COMMAND git submodule update --init extern/relic
+						WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
+	endif()
+endif()
 
 set(ecclvl 251) #set this for the ecc security level
 
@@ -41,15 +55,15 @@ add_subdirectory(extern/relic)
 
 #looks dirty, but since the relic library is poorly exported let's treat it as an external library
 if(CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-    set(RELIC_LIB_DIR "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/librelic_s.a")
+	set(RELIC_LIB_DIR "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/librelic_s.a")
 else()
-    set(RELIC_LIB_DIR "${CMAKE_CURRENT_BINARY_DIR}/extern/relic/lib/librelic_s.a")
+	set(RELIC_LIB_DIR "${CMAKE_CURRENT_BINARY_DIR}/extern/relic/lib/librelic_s.a")
 endif()
 
 add_library(RELIC::relic STATIC IMPORTED)
 set_target_properties(RELIC::relic PROPERTIES
-    IMPORTED_LOCATION ${RELIC_LIB_DIR}
-    INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/extern/relic/include;${CMAKE_CURRENT_SOURCE_DIR}/extern/relic/include/low;${CMAKE_CURRENT_BINARY_DIR}/extern/relic/include"
+	IMPORTED_LOCATION ${RELIC_LIB_DIR}
+	INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/extern/relic/include;${CMAKE_CURRENT_SOURCE_DIR}/extern/relic/include/low;${CMAKE_CURRENT_BINARY_DIR}/extern/relic/include"
 )
 
 add_subdirectory(src)
