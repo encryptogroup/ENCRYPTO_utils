@@ -19,6 +19,7 @@ add_library(encrypto_utils
     ${PROJECT_NAME}/thread.cpp
     ${PROJECT_NAME}/timer.cpp
     ${PROJECT_NAME}/utils.cpp
+    ${PROJECT_NAME}/graycode.cpp
 )
 add_library(ENCRYPTO_utils::encrypto_utils ALIAS encrypto_utils)
 
