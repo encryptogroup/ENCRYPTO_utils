@@ -21,6 +21,7 @@
 
 #include "typedefs.h"
 #include <cstdint>
+#include <cmake_constants.h>
 
 #define BATCH
 //#define FIXED_KEY_AES_HASHING

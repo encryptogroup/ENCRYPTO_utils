@@ -25,13 +25,17 @@ add_library(ENCRYPTO_utils::encrypto_utils ALIAS encrypto_utils)
 
 target_compile_features(encrypto_utils PUBLIC cxx_std_17)
 target_compile_options(encrypto_utils PRIVATE "-Wall" "-Wextra")
-#Maybe it is better to create a ecc-pk-crypti.h.in file, since the ecclvl is only needed there
-target_compile_definitions(encrypto_utils PUBLIC ECCLVL=${ecclvl})
+
+configure_file (
+    "${CMAKE_CURRENT_SOURCE_DIR}/ENCRYPTO_utils/cmake_constants.h.in"
+    "${PROJECT_BINARY_DIR}/include/cmake_constants.h"
+)
 
 target_include_directories(encrypto_utils
     PUBLIC
         $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
 )
 
 
