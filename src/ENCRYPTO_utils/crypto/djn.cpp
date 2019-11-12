@@ -235,7 +235,7 @@ void djn_encrypt_crt(mpz_t res, djn_pubkey_t* pub, djn_prvkey_t* prv, mpz_t plai
 }
 
 /**
- * mpz_t version of encrypt_crt
+ * fixed base encryption. Requires pre-computed fixed base table
  */
 void djn_encrypt_fb(mpz_t res, djn_pubkey_t* pub, mpz_t plaintext) {
 	mpz_t r;
