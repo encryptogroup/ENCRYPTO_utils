@@ -19,10 +19,13 @@
 #include "utils.h"
 
 #include <cstdint>
+#include <cstring>
 #include <fcntl.h>
 #include <gmp.h>
+#include <iomanip>
 #include <iostream>
 #include <unistd.h>
+
 
 
 //TODO: this is bad, fix occurrences of ceil_log2 and replace by ceil_log2_min1 where log(1) = 1 is necessary. For all else use ceil_log2_real
@@ -122,4 +125,14 @@ void aby_prng(mpz_t rnd, mp_bitcnt_t bitlen) {
     }
 
     free(data);
+}
+
+void printb(const char* title, const unsigned char *buffer, size_t length) {
+	int indent = (strlen(title) > 6 ? ((strlen(title) + 2) / 6 + 1) * 6 : 7 + 2);
+	std::cout << title << ":" << std::string(indent - strlen(title) - 2, ' ');
+	for(size_t i = 0; i < length; i++) {
+		std::cout << ((i != 0 && i % 16 == 0) ? "\n" + std::string(indent, ' ') : " ");
+		std::cout << std::setfill('0') << std::hex << std::setw(2) << (int)buffer[i] << std::dec;
+	}
+	std::cout << '\n';
 }
