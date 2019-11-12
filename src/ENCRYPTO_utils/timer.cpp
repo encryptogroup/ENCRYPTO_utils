@@ -101,7 +101,7 @@ void StopRecording(const std::string& msg, ABYPHASE phase,
 void PrintTimings() {
 	std::string unit = " ms";
 	std::cout << "Timings: " << std::endl;
-	std::cout << "Total =\t\t" << m_tTimes[P_TOTAL].timing << unit << std::endl;
+	std::cout << "Total =\t\t" << m_tTimes[P_TOTAL].timing << unit << " // " << m_tTimes[P_TOTAL].timing/1000 << " s" << std::endl;
 	std::cout << "Init =\t\t" << m_tTimes[P_INIT].timing << unit << std::endl;
 	std::cout << "CircuitGen =\t" << m_tTimes[P_CIRCUIT].timing << unit << std::endl;
 	std::cout << "Network =\t" << m_tTimes[P_NETWORK].timing << unit << std::endl;
@@ -115,7 +115,7 @@ void PrintTimings() {
 void PrintCommunication() {
 	std::string unit = " bytes";
 	std::cout << "Communication: " << std::endl;
-	std::cout << "Total Sent / Rcv\t" << m_tSend[P_TOTAL].totalcomm << " " << unit << " / " << m_tRecv[P_TOTAL].totalcomm << unit << std::endl;
+	std::cout << "Total Sent / Rcv\t" << m_tSend[P_TOTAL].totalcomm << " " << unit << " / " << m_tRecv[P_TOTAL].totalcomm << unit << " // " << (m_tSend[P_TOTAL].totalcomm + m_tRecv[P_TOTAL].totalcomm) << " " << unit << " // " << ((m_tSend[P_TOTAL].totalcomm + m_tRecv[P_TOTAL].totalcomm)*1.0/1024/1024) << " MB" << std::endl;
 	std::cout << "BaseOTs Sent / Rcv\t" << m_tSend[P_BASE_OT].totalcomm << " " << unit << " / " << m_tRecv[P_BASE_OT].totalcomm << unit << std::endl;
 	std::cout << "Setup Sent / Rcv\t" << m_tSend[P_SETUP].totalcomm << " " << unit << " / " << m_tRecv[P_SETUP].totalcomm << unit << std::endl;
 	std::cout << "OTExtension Sent / Rcv\t" << m_tSend[P_OT_EXT].totalcomm << " " << unit << " / " << m_tRecv[P_OT_EXT].totalcomm << unit << std::endl;
