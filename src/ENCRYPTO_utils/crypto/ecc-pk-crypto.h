@@ -75,6 +75,7 @@ public:
 	}
 	;
 
+	/* create brick object for fast exponentiation using precomputation */
 	brickexp* get_brick(fe* gen);
 	ecc_fparams* get_params() {
 		return fparams;

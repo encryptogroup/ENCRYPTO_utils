@@ -95,6 +95,7 @@ void ecc_field::init(seclvl sp, uint8_t* seed) {
 	mip->IOBASE = 16;
 	*fparams->BB = 1;
 
+	// initialize MIRACL with Koblitz curve from FIPS 186-2 standard
 	ecurve2_init(fparams->m, fparams->a, fparams->b, fparams->c, fparams->BA->getbig(), fparams->BB->getbig(), false, MR_BEST);
 
 	fparams->X = new Big();
@@ -312,6 +313,10 @@ void ecc_num::import_from_bytes(uint8_t* buf, uint32_t field_size_bytes) {
 //export and pad all leading zeros
 void ecc_num::export_to_bytes(uint8_t* buf, uint32_t field_size_bytes) {
 	big_to_bytes((int32_t) field_size_bytes, val->getbig(), (char*) buf, true);
+}
+
+void ecc_num::set_rnd(uint32_t bitlen) {
+	*val = rand(bitlen, 2);
 }
 
 void ecc_num::print() {
