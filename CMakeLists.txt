@@ -66,6 +66,8 @@ set_target_properties(RELIC::relic PROPERTIES
 	INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/extern/relic/include;${CMAKE_CURRENT_SOURCE_DIR}/extern/relic/include/low;${CMAKE_CURRENT_BINARY_DIR}/extern/relic/include"
 )
 
+target_link_libraries(RELIC::relic INTERFACE relic_s)
+
 add_subdirectory(src)
 
 if(ENCRYPTO_UTILS_BUILD_TESTS)
