@@ -28,13 +28,10 @@ extern "C"
 
 #include <memory>
 #include <vector>
-#include <mutex>
 
 class ecc_num;
 class ecc_fe;
 class ecc_brickexp;
-
-static std::mutex relic_mutex;
 
 class ecc_field: public pk_crypto {
 public:
@@ -76,6 +73,7 @@ public:
 	~ecc_num();
 	void set(num* src);
 	void set_si(int32_t src);
+	void set_rnd(uint32_t bitlen = 0);
 	void set_add(num* a, num* b);
 	void set_sub(num* a, num* b);
 	void set_mul(num* a, num* b);
@@ -113,6 +111,7 @@ public:
 	void import_from_bytes(uint8_t* buf);
 	void sample_fe_from_bytes(uint8_t* buf, uint32_t bytelen);
 	bool eq(fe* a);
+	bool is_infty();
 
 	void print();
 
