@@ -1,3 +1,6 @@
+[submodule "extern/boost-cmake"]
+	path = extern/boost-cmake
+	url = https://github.com/Orphis/boost-cmake.git
 [submodule "extern/relic"]
 	path = extern/relic
 	url = https://github.com/relic-toolkit/relic.git

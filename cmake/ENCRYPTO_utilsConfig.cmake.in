@@ -1,13 +1,22 @@
 get_filename_component(ENCRYPTO_utils_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 
-list(APPEND CMAKE_MODULE_PATH "${ENCRYPTO_utils_CMAKE_DIR}")
-
 include(CMakeFindDependencyMacro)
 
+find_dependency(Boost)
+find_dependency(Relic)
 find_dependency(GMP)
 find_dependency(GMPXX)
-find_dependency(OpenSSL)
-
+#We use CONFIG mode on Android to prevent using FindOpenSSL, 
+#as it does not search the ndk correctly.
+if(ANDROID)
+    find_dependency(OpenSSL CONFIG)
+else()
+    find_dependency(OpenSSL)
+endif()
 if(NOT TARGET ENCRYPTO_utils::encrypto_utils)
     include("${ENCRYPTO_utils_CMAKE_DIR}/ENCRYPTO_utilsTargets.cmake")
+endif()
+
+if(TARGET ENCRYPTO_utils::encrypto_utils)
+    set(ENCRYPTO_utils_FOUND TRUE)
 endif()
