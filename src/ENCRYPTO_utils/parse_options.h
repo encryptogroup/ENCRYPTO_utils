@@ -71,6 +71,6 @@ int32_t parse_options(int32_t* argcp, char*** argvp, parsing_ctx* options, uint3
 */
 void print_usage(std::string progname, parsing_ctx* options, uint32_t nops);
 void tokenize(const std::string& str, std::vector<uint32_t>& tokens, const std::string& delimiters = "| \t");
-void tokenize_verilog(const std::string& str, std::vector<uint32_t>& tokens, const std::string& delimiters = " \t");
+void tokenize_verilog(const std::string& str, std::vector<int>& tokens, const std::string& delimiters = " \t");
 
 #endif /* PARSE_OPTIONS_H_ */

@@ -26,7 +26,7 @@
  * @param str the string to tokenize
  * @param tokens the result vector of wire id
  */
-void tokenize_verilog(const std::string& str, std::vector<uint32_t>& tokens, const std::string& delimiters) {
+void tokenize_verilog(const std::string& str, std::vector<int>& tokens, const std::string& delimiters) {
 
 	tokens.clear();
 
@@ -38,7 +38,7 @@ void tokenize_verilog(const std::string& str, std::vector<uint32_t>& tokens, con
 
 	while (std::string::npos != pos || std::string::npos != lastPos) {
 		// Found a token, add it to the vector.
-		tokens.push_back(atoi(str.substr(lastPos, pos - lastPos).c_str()));
+		tokens.push_back(stoi(str.substr(lastPos, pos - lastPos)));
 		// Skip delimiters.  Note the "not_of"
 		lastPos = str.find_first_not_of(delimiters, pos);
 		// Find next "non-delimiter"
@@ -64,7 +64,7 @@ void tokenize(const std::string& str, std::vector<uint32_t>& tokens, const std::
 
 	while (std::string::npos != pos || std::string::npos != lastPos) {
 		// Found a token, add it to the vector.
-		tokens.push_back(atoi(str.substr(lastPos, pos - lastPos).c_str()));
+		tokens.push_back(stoi(str.substr(lastPos, pos - lastPos)));
 		// Skip delimiters.  Note the "not_of"
 		lastPos = str.find_first_not_of(delimiters, pos);
 		// Find next "non-delimiter"
