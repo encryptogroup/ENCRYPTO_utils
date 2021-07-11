@@ -16,10 +16,10 @@
  */
 
 #include "ecc-pk-crypto.h"
+#include <iostream>
 
 
 void ecc_field::init(seclvl sp, uint8_t* seed) {
-	relic_mutex.lock();
 	core_set(NULL);
 	
 	core_init(); //initialize the relic library
@@ -29,7 +29,6 @@ void ecc_field::init(seclvl sp, uint8_t* seed) {
 	fe_bytelen = ceil_divide(ECCLVL, 8) + 1;
 
 	context = core_get();
-	relic_mutex.unlock();
 
 	generator = (ecc_fe*) get_generator();
 	order = get_order();
@@ -39,7 +38,6 @@ ecc_field::~ecc_field() {
 	delete generator;
 	delete order;
 
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 	core_clean();
 }
@@ -49,7 +47,6 @@ num* ecc_field::get_num() {
 }
 
 num* ecc_field::get_order() {
-	relic_mutex.lock();
 	core_set(context);
 
 	bn_t bn_order;
@@ -57,7 +54,6 @@ num* ecc_field::get_order() {
 	bn_new(bn_order);
 	eb_curve_get_ord(bn_order);
 
-	relic_mutex.unlock();
 	return new ecc_num(this, bn_order);
 }
 
@@ -66,7 +62,6 @@ num* ecc_field::get_rnd_num(uint32_t bitlen) {
 		bitlen = ECCLVL;
 	}
 
-	relic_mutex.lock();
 	core_set(context);
 
 	bn_t rnd;
@@ -74,8 +69,6 @@ num* ecc_field::get_rnd_num(uint32_t bitlen) {
 	bn_new(rnd);
 
 	bn_rand(rnd, RLC_POS, bitlen);
-
-	relic_mutex.unlock();
 
 	num* res = new ecc_num(this, rnd);
 	return res;
@@ -89,15 +82,12 @@ fe* ecc_field::get_rnd_fe() {
 }
 
 fe* ecc_field::get_generator() {
-	relic_mutex.lock();
 	core_set(context);
 
 	eb_t eb_generator;
 	eb_null(eb_generator);
 	eb_new(eb_generator);
 	eb_curve_get_gen(eb_generator);
-
-	relic_mutex.unlock();
 
 	return new ecc_fe(this, eb_generator);
 }
@@ -119,15 +109,12 @@ uint32_t ecc_field::get_size() {
 }
 
 fe* ecc_field::sample_random_point() {
-	relic_mutex.lock();
 	core_set(context);
 
 	eb_t tmp_eb;
 	eb_null(tmp_eb);
 	eb_new(tmp_eb);
 	eb_rand(tmp_eb);
-
-	relic_mutex.unlock();
 
 	fe* tmp_fe = new ecc_fe(this, tmp_eb);
 	return tmp_fe;
@@ -146,20 +133,17 @@ ecc_fe::ecc_fe(ecc_field* fld, eb_t src) {
 	field = fld;
 	init();
 
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	eb_copy(val, src);
 }
 ecc_fe::~ecc_fe() {
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	eb_free(val);
 }
 
 void ecc_fe::set(fe* src) {
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	eb_t tmp_val;
@@ -173,7 +157,6 @@ void ecc_fe::get_val(eb_t res) {
 
 //Note: if the same value is processed, a has to be this value
 void ecc_fe::set_mul(fe* a, fe* b) {
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	eb_t eb_a;
@@ -185,7 +168,6 @@ void ecc_fe::set_mul(fe* a, fe* b) {
 }
 
 void ecc_fe::set_pow(fe* a, num* e) {
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	eb_t eb_a;
@@ -198,7 +180,6 @@ void ecc_fe::set_pow(fe* a, num* e) {
 
 //Note: if the same value is processed, a has to be this value
 void ecc_fe::set_div(fe* a, fe* b) {
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	eb_t eb_a;
@@ -211,7 +192,6 @@ void ecc_fe::set_div(fe* a, fe* b) {
 
 //TODO not sure what double here means, please check
 void ecc_fe::set_double_pow_mul(fe* b1, num* e1, fe* b2, num* e2) {
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	eb_t eb_b1;
@@ -227,14 +207,12 @@ void ecc_fe::set_double_pow_mul(fe* b1, num* e1, fe* b2, num* e2) {
 }
 
 void ecc_fe::import_from_bytes(uint8_t* buf) {
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	eb_read_bin(val, buf, field->fe_byte_size());
 }
 
 void ecc_fe::export_to_bytes(uint8_t* buf) {
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	eb_write_bin(buf, field->fe_byte_size(), val, true);
@@ -242,32 +220,32 @@ void ecc_fe::export_to_bytes(uint8_t* buf) {
 
 //TODO not sure what the difference to import_from_bytes is yet
 void ecc_fe::sample_fe_from_bytes(uint8_t* buf, uint32_t bytelen) {
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	eb_read_bin(val, buf, bytelen);
 	//TODO normalizing or something like that
 }
 bool ecc_fe::eq(fe* a) {
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	eb_t to_cmp;
 	((ecc_fe*) a)->get_val(to_cmp);
 	return eb_cmp(val, to_cmp) == RLC_EQ;
 }
+bool ecc_fe::is_infty() {
+	core_set(context);
+	return eb_is_infty(val);
+}
 
 void ecc_fe::init() {
 	context = field->get_context();
 
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	eb_null(val);
 	eb_new(val);
 };
 void ecc_fe::print() {
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	eb_print(val);
@@ -281,7 +259,6 @@ ecc_num::ecc_num(ecc_field* fld) {
 	field = fld;
 	context = field->get_context();
 
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	bn_null(val);
@@ -291,7 +268,6 @@ ecc_num::ecc_num(ecc_field* fld, bn_t src) {
 	field = fld;
 	context = field->get_context();
 
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	bn_null(val);
@@ -300,7 +276,6 @@ ecc_num::ecc_num(ecc_field* fld, bn_t src) {
 }
 
 ecc_num::~ecc_num() {
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	bn_free(val);
@@ -311,7 +286,6 @@ void ecc_num::get_val(bn_t res) {
 }
 
 void ecc_num::set(num* src) {
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	bn_t tmp_val;
@@ -320,9 +294,19 @@ void ecc_num::set(num* src) {
 }
 void ecc_num::set_si(int32_t src) {
 	//TODO implement this method
+	std::cerr << "set_si is not implemented" << std::endl;
+	throw;
+}
+void ecc_num::set_rnd(uint32_t bitlen) {
+	if (bitlen == 0) {
+		bitlen = ECCLVL;
+	}
+
+	core_set(context);
+
+	bn_rand(val, RLC_POS, bitlen);
 }
 void ecc_num::set_add(num* a, num* b) {
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	bn_t bn_a;
@@ -332,7 +316,6 @@ void ecc_num::set_add(num* a, num* b) {
 	bn_add(val, bn_a, bn_b);
 }
 void ecc_num::set_sub(num* a, num* b) {
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	bn_t bn_a;
@@ -342,7 +325,6 @@ void ecc_num::set_sub(num* a, num* b) {
 	bn_sub(val, bn_a, bn_b);
 }
 void ecc_num::set_mul(num* a, num* b) {
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	bn_t bn_a;
@@ -353,7 +335,6 @@ void ecc_num::set_mul(num* a, num* b) {
 }
 
 void ecc_num::mod(num* modulus) {
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	bn_t bn_mod;
@@ -368,7 +349,6 @@ void ecc_num::set_mul_mod(num* a, num* b, num* modulus) {
 }
 
 void ecc_num::import_from_bytes(uint8_t* buf, uint32_t field_size_bytes) {
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	bn_read_bin(val, buf, field_size_bytes);
@@ -376,14 +356,12 @@ void ecc_num::import_from_bytes(uint8_t* buf, uint32_t field_size_bytes) {
 
 //export and pad all leading zeros
 void ecc_num::export_to_bytes(uint8_t* buf, uint32_t field_size_bytes) {
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	bn_write_bin(buf, field_size_bytes, val);
 }
 
 void ecc_num::print() {
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	bn_print(val);
@@ -397,7 +375,6 @@ ecc_brickexp::ecc_brickexp(fe* generator, ecc_field* field) {
 	this->field = field;
 	context = field->get_context();
 
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	eb_t tmp_val;
@@ -413,7 +390,6 @@ ecc_brickexp::ecc_brickexp(fe* generator, ecc_field* field) {
 }
 
 ecc_brickexp::~ecc_brickexp() {
-	std::lock_guard<std::mutex> lock(relic_mutex);
 	core_set(context);
 
 	for(uint32_t i = 0; i < RLC_EB_TABLE; ++i) {
@@ -424,7 +400,6 @@ ecc_brickexp::~ecc_brickexp() {
 
 
 void ecc_brickexp::pow(fe* result, num* e) {
-	relic_mutex.lock();
 	core_set(context);
 
 	eb_t eb_res;
@@ -434,9 +409,6 @@ void ecc_brickexp::pow(fe* result, num* e) {
 	((ecc_num*) e)->get_val(bn_e);
 	eb_mul_fix(eb_res, eb_table, bn_e);
 
-	relic_mutex.unlock();
-
 	ecc_fe tmp_fe(field, eb_res);
 	result->set(&tmp_fe);
-
 }
