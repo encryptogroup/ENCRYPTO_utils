@@ -62,5 +62,6 @@ uint32_t aby_rand();
  */
 void aby_prng(mpz_t rnd, mp_bitcnt_t len);
 
+void printb(const char* title, const unsigned char *buffer, size_t length);
 
 #endif // _UTILS_H__
