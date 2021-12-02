@@ -34,7 +34,16 @@ class ecc_num;
 class ecc_fe;
 class ecc_brickexp;
 
+//The __thread keyword is implementation dependent and therefore
+//it is potentionally dangerous to use this keyword.
+//If the code doesn't compile with your compiler change
+//the MULTI keyword in the cmake configuration to an empty string
+//to disable thread local storage
+#ifdef TRHEADSYNC_ENABLED
+static __thread std::mutex relic_mutex;
+#else
 static std::mutex relic_mutex;
+#endif
 
 class ecc_field: public pk_crypto {
 public:

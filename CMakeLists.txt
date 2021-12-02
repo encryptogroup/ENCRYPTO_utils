@@ -28,7 +28,9 @@ elseif(NOT RELIC_FOUND AND NOT TARGET RELIC::relic)
 	endif()
 endif()
 
-set(ecclvl 251) #set this for the ecc security level
+#relic library configuration with customizable parameters (you are likely wanting to change them)
+set(FB_POLYN "251" CACHE STRING "security level of the ecc binary curve in relic") # set this to change the elliptic curve security parameter
+set(MULTI "PTHREAD" CACHE STRING "Multithreading interface") #set this to "" in case your operating system doesn_t support the __thread keyword and pthread
 
 #relic library configuration
 set(DEBUG off CACHE BOOL "Build relic with debugging support")
@@ -37,7 +39,6 @@ set(CHECK off CACHE BOOL "Build relic with error-checking support")
 set(ALIGN "16" CACHE STRING "Relic align")
 set(ARCH "X64" CACHE STRING "Architecture to be used in relic")
 set(ARITH "curve2251-sse" CACHE STRING "arithmetic utils used in relic")
-set(FB_POLYN ${ecclvl} CACHE INTEGER "security level of the ecc binary curve in relic")
 set(FB_METHD "INTEG;INTEG;QUICK;QUICK;QUICK;QUICK;LOWER;SLIDE;QUICK" CACHE STRING "Methods for fb in relic")
 set(FB_PRECO on CACHE BOOl "fb preco for relic")
 set(FB_SQRTF off CACHE BOOL "sqrtf for relic")

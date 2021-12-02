@@ -1,2 +1,14 @@
+#ifndef CMAKE_CONSTANTS_H_
+
 //the security parameter for public crypto
-#define ECCLVL @ecclvl@
+#define ECCLVL @FB_POLYN@
+
+//the support of the __thread keyword and pthreads
+#cmakedefine MULTI @MULTI@
+#if defined(MULTI)
+#if MULTI == PTHREAD
+    #define TRHEADSYNC_ENABLED
+#endif
+#endif
+
+#endif //CMAKE_CONSTANTS_H_
