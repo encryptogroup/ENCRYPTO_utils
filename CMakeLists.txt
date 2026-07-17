@@ -7,6 +7,11 @@ endif()
 
 option(ENCRYPTO_UTILS_BUILD_TESTS "Build tests" Off)
 
+if(APPLE)
+    set(OPENSSL_ROOT_DIR /usr/local/opt/openssl/)
+    set(OPENSSL_CRYPTO_LIBRARY /usr/local/opt/openssl/lib/libcrypto.dylib)
+endif(APPLE)
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 find_package(GMP REQUIRED)

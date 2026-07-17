@@ -99,18 +99,30 @@ void StopRecording(const std::string& msg, ABYPHASE phase,
 
 
 void PrintTimings() {
+	// std::string unit = " ms";
+	// std::cout << "Timings: " << std::endl;
+	// std::cout << "Total =\t\t" << m_tTimes[P_TOTAL].timing << unit << std::endl;
+	// std::cout << "Init =\t\t" << m_tTimes[P_INIT].timing << unit << std::endl;
+	// std::cout << "CircuitGen =\t" << m_tTimes[P_CIRCUIT].timing << unit << std::endl;
+	// std::cout << "Network =\t" << m_tTimes[P_NETWORK].timing << unit << std::endl;
+	// std::cout << "BaseOTs =\t" << m_tTimes[P_BASE_OT].timing << unit << std::endl;
+	// std::cout << "Setup =\t\t" << m_tTimes[P_SETUP].timing << unit << std::endl;
+	// std::cout << "OTExtension =\t" << m_tTimes[P_OT_EXT].timing << unit << std::endl;
+	// std::cout << "Garbling =\t" << m_tTimes[P_GARBLE].timing << unit << std::endl;
+	// std::cout << "Online =\t" << m_tTimes[P_ONLINE].timing << unit << std::endl;
+
 	std::string unit = " ms";
-	std::cout << "Timings: " << std::endl;
-	std::cout << "Total =\t\t" << m_tTimes[P_TOTAL].timing << unit << std::endl;
-	std::cout << "Init =\t\t" << m_tTimes[P_INIT].timing << unit << std::endl;
-	std::cout << "CircuitGen =\t" << m_tTimes[P_CIRCUIT].timing << unit << std::endl;
-	std::cout << "Network =\t" << m_tTimes[P_NETWORK].timing << unit << std::endl;
-	std::cout << "BaseOTs =\t" << m_tTimes[P_BASE_OT].timing << unit << std::endl;
-	std::cout << "Setup =\t\t" << m_tTimes[P_SETUP].timing << unit << std::endl;
-	std::cout << "OTExtension =\t" << m_tTimes[P_OT_EXT].timing << unit << std::endl;
-	std::cout << "Garbling =\t" << m_tTimes[P_GARBLE].timing << unit << std::endl;
-	std::cout << "Online =\t" << m_tTimes[P_ONLINE].timing << unit << std::endl;
+	std::cout << "LOG: Timing Total: " << m_tTimes[P_TOTAL].timing << unit << std::endl;
+	std::cout << "LOG: Timing Init: " << m_tTimes[P_INIT].timing << unit << std::endl;
+	std::cout << "LOG: Timing CircuitGen: " << m_tTimes[P_CIRCUIT].timing << unit << std::endl;
+	std::cout << "LOG: Timing Network: " << m_tTimes[P_NETWORK].timing << unit << std::endl;
+	std::cout << "LOG: Timing BaseOTs: " << m_tTimes[P_BASE_OT].timing << unit << std::endl;
+	std::cout << "LOG: Timing Setup: " << m_tTimes[P_SETUP].timing << unit << std::endl;
+	std::cout << "LOG: Timing OTExtension: " << m_tTimes[P_OT_EXT].timing << unit << std::endl;
+	std::cout << "LOG: Timing Garbling: " << m_tTimes[P_GARBLE].timing << unit << std::endl;
+	std::cout << "LOG: Timing Online: " << m_tTimes[P_ONLINE].timing << unit << std::endl;
 }
+
 
 void PrintCommunication() {
 	std::string unit = " bytes";

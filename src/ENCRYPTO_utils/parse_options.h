@@ -31,7 +31,8 @@ enum etype {
 	T_NUM, //uint32_t number
 	T_STR, //string
 	T_FLAG, //boolean flag
-	T_DOUBLE //double number
+	T_DOUBLE, //double number
+	T_PARAMETERS, //parameters
 };
 
 

@@ -19,6 +19,8 @@
 #include "parse_options.h"
 #include <cstring>
 #include <iostream>
+#include <numeric>
+#include <vector>
 
 /**
  * takes a string in the Format "c i i i ..."
@@ -112,6 +114,23 @@ int32_t parse_options(int32_t* argcp, char*** argvp, parsing_ctx* options, uint3
 				case T_FLAG:
 					*((bool*) options[i].val) = true;
 					break;
+				case T_PARAMETERS:
+					std::vector<std::string> v = {};
+					++*argvp;
+					--*argcp;
+					while ((*argvp)[1] != NULL && (*argvp)[1][0] != '-') {
+						v.push_back((*argvp)[1]);
+						++*argvp;
+						--*argcp;
+					}
+					--*argvp;
+					++*argcp;
+					*((std::string*) options[i].val) = std::accumulate(v.begin(), v.end(), std::string(""),
+                                [](std::string &ss, std::string &s)
+                                {
+                                    return ss.empty() ? s : ss + "," + s;
+                                });
+					break;
 				}
 				++result;
 				++*argvp;
@@ -126,7 +145,7 @@ int32_t parse_options(int32_t* argcp, char*** argvp, parsing_ctx* options, uint3
 		}
 	}
 
-	for (i = 0; i < nops; i++) {
+    for (i = 0; i < nops; i++) {
 		if (options[i].required && !options[i].set)
 			return 0;
 	}
