@@ -22,6 +22,7 @@
 #include "sndthread.h"
 #include <cassert>
 #include <cstring>
+#include <cstdlib>
 
 
 channel::channel(uint8_t channelid, RcvThread* rcver, SndThread* snder)
